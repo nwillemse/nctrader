@@ -5,7 +5,7 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 from datetime import datetime
 
-import qstrader.statistics.performance as perf
+import nctrader.statistics.performance as perf
 
 import pandas as pd
 import numpy as np
