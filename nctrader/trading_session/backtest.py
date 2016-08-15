@@ -3,6 +3,8 @@ from __future__ import print_function
 from ..compat import queue
 from ..event import EventType
 
+from datetime import datetime
+
 
 class Backtest(object):
     """
@@ -10,11 +12,9 @@ class Backtest(object):
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, price_handler,
-        strategy, portfolio_handler,
-        execution_handler,
-        position_sizer, risk_manager,
-        statistics, equity,
+        self, price_handler, strategy, portfolio_handler,
+        execution_handler, position_sizer, risk_manager,
+        statistics, equity, start_date=None, end_date=None
     ):
         """
         Set up the backtest variables according to
@@ -28,8 +28,20 @@ class Backtest(object):
         self.risk_manager = risk_manager
         self.statistics = statistics
         self.equity = equity
+        self.start_date, self.end_date = self._default_dates(
+            start_date, end_date
+        )
         self.events_queue = price_handler.events_queue
         self.cur_time = None
+
+    def _default_dates(self, start_date, end_date):
+        """
+        """
+        if start_date is None:
+            start_date = datetime(1900, 1, 1)
+        if end_date is None:
+            end_date = datetime(2099, 1, 1)
+        return start_date, end_date
 
     def _run_backtest(self):
         """
@@ -46,7 +58,9 @@ class Backtest(object):
             except queue.Empty:
                 self.price_handler.stream_next()
             else:
-                if event is not None:
+                if (event is not None and self.cur_time is None
+                    or (self.cur_time >= self.start_date and self.cur_time <= self.end_date)
+                ):
                     if event.type == EventType.TICK or event.type == EventType.BAR:
                         self.cur_time = event.time
                         self.strategy.calculate_signals(event)
@@ -69,9 +83,6 @@ class Backtest(object):
         results = self.statistics.get_results()
         print("---------------------------------")
         print("Backtest complete.")
-        print("Sharpe Ratio: %s" % results["sharpe"])
-        print("Max Drawdown: %s" % results["max_drawdown"])
-        print("Max Drawdown Pct: %s" % results["max_drawdown_pct"])
         if not testing:
             self.statistics.plot_results()
         return results
