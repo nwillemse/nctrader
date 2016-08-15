@@ -4,6 +4,7 @@ from ..price_parser import PriceParser
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 from datetime import datetime
+from collections import OrderedDict
 
 import nctrader.statistics.performance as perf
 
@@ -14,6 +15,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.dates as mdates
 import seaborn as sns
 import os
+import csv
 
 
 class TearsheetStatistics(AbstractStatistics):
@@ -21,7 +23,8 @@ class TearsheetStatistics(AbstractStatistics):
     """
     def __init__(self, config, portfolio_handler, title=None, benchmark=None):
         """
-        Takes in a portfolio handler.
+        Takes in the config, a portfolio handler, optional title
+        and benchmark.
         """
         self.config = config
         self.portfolio_handler = portfolio_handler
@@ -31,8 +34,9 @@ class TearsheetStatistics(AbstractStatistics):
         self.equity = {}
         self.equity_benchmark = {}
         self.log_scale = False
+        self.equity_file = []
 
-    def update(self, timestamp, portfolio_handler):
+    def update(self, timestamp):
         """
         Update equity curve and benchmark equity curve that must be tracked
         over time.
@@ -44,6 +48,16 @@ class TearsheetStatistics(AbstractStatistics):
             self.equity_benchmark[timestamp] = PriceParser.display(
                 self.price_handler.get_last_close(self.benchmark)
             )
+        d = {}
+        d['timestamp'] = timestamp
+        d['equity'] = PriceParser.display(
+            self.portfolio_handler.portfolio.equity
+        )
+        d['cur_cash'] = PriceParser.display(
+            self.portfolio_handler.portfolio.cur_cash
+        )
+        self.equity_file.append(d)
+        # self.positions = {}
 
     def get_results(self):
         """
@@ -534,13 +548,27 @@ class TearsheetStatistics(AbstractStatistics):
         if filename is not None:
             fig.savefig(filename)
 
-    def get_filename(self, filename=""):
-        if filename == "":
-            now = datetime.utcnow()
-            filename = "tearsheet_" + now.strftime("%Y-%m-%d_%H%M%S") + ".png"
-            filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
-        return filename
 
     def save(self, filename=""):
-        filename = self.get_filename(filename)
-        self.plot_results
+        now = datetime.utcnow()
+        # Save tearsheet figure
+        filename = "tearsheet_" + now.strftime("%Y-%m-%d") + ".png"
+        filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
+        self.plot_results(filename)
+
+        # Save the list of positions
+        filename = "positions_" + now.strftime("%Y-%m-%d") + ".csv"
+        filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
+        self._get_positions().to_csv(filename)
+
+        # Save the equity stats
+        filename = "equity_" + now.strftime("%Y-%m-%d") + ".csv"
+        filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
+        print self.equity_file
+#        self.equity_file.to_csv(filename)
+        with open(filename, 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=self.equity_file[0].keys())
+            #writer.writeheader()
+            for row in self.equity_file:
+                writer.writerow(row)
+
