@@ -3,6 +3,7 @@ import os
 import csv
 
 from .base import AbstractCompliance
+from ..price_parser import PriceParser
 
 
 class ExampleCompliance(AbstractCompliance):
@@ -53,6 +54,6 @@ class ExampleCompliance(AbstractCompliance):
             writer.writerow([
                 fill.timestamp, fill.ticker,
                 fill.action, fill.quantity,
-                fill.exchange, fill.price,
-                fill.commission
+                fill.exchange, PriceParser.display(fill.price),
+                PriceParser.display(fill.commission)
             ])
