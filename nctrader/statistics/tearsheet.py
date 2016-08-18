@@ -4,7 +4,6 @@ from ..price_parser import PriceParser
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 from datetime import datetime
-from collections import OrderedDict
 
 import nctrader.statistics.performance as perf
 
@@ -551,6 +550,7 @@ class TearsheetStatistics(AbstractStatistics):
 
     def save(self, filename=""):
         now = datetime.utcnow()
+
         # Save tearsheet figure
         filename = "tearsheet_" + now.strftime("%Y-%m-%d") + ".png"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))

@@ -1,3 +1,7 @@
+from numpy import sign
+from .price_parser import PriceParser
+
+
 class Position(object):
     def __init__(
         self, action, ticker, init_quantity,
@@ -40,7 +44,6 @@ class Position(object):
 
         Finally, calculate the net total with and without commission.
         """
-
         if self.action == "BOT":
             self.buys = self.quantity
             self.avg_bot = self.init_price
@@ -70,7 +73,7 @@ class Position(object):
         and loss of any transactions.
         """
         midpoint = (bid + ask) // 2
-        self.market_value = self.quantity * midpoint
+        self.market_value = self.quantity * midpoint * sign(self.net)
         self.unrealised_pnl = self.market_value - self.cost_basis
         self.realised_pnl = self.market_value + self.net_incl_comm
 
@@ -109,3 +112,13 @@ class Position(object):
 
         # Adjust average price and cost basis
         self.cost_basis = self.quantity * self.avg_price
+
+    def __str__(self):
+        return "Position: ticker=%s action=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
+            (self.ticker, self.action, self.quantity, self.buys, self.sells, self.net,
+             PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
+             PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
+             PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
+             PriceParser.display(self.cost_basis, 4), PriceParser.display(self.market_value, 4),
+             PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl)
+            )

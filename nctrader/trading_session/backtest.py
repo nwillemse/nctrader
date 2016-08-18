@@ -58,22 +58,23 @@ class Backtest(object):
             except queue.Empty:
                 self.price_handler.stream_next()
             else:
-                if (event is not None and self.cur_time is None
-                    or (self.cur_time >= self.start_date and self.cur_time <= self.end_date)
+                if ((event.type == EventType.TICK or event.type == EventType.BAR)
+                    and (event.time < self.start_date or event.time > self.end_date)
                 ):
-                    if event.type == EventType.TICK or event.type == EventType.BAR:
-                        self.cur_time = event.time
-                        self.strategy.calculate_signals(event)
-                        self.portfolio_handler.update_portfolio_value()
-                        self.statistics.update(event.time)
-                    elif event.type == EventType.SIGNAL:
-                        self.portfolio_handler.on_signal(event)
-                    elif event.type == EventType.ORDER:
-                        self.execution_handler.execute_order(event)
-                    elif event.type == EventType.FILL:
-                        self.portfolio_handler.on_fill(event)
-                    else:
-                        raise NotImplemented("Unsupported event.type '%s'" % event.type)
+                    continue
+                if (event.type == EventType.TICK or event.type == EventType.BAR):
+                    self.cur_time = event.time
+                    self.strategy.calculate_signals(event)
+                    self.portfolio_handler.update_portfolio_value()
+                    self.statistics.update(event.time)
+                elif event.type == EventType.SIGNAL:
+                    self.portfolio_handler.on_signal(event)
+                elif event.type == EventType.ORDER:
+                    self.execution_handler.execute_order(event)
+                elif event.type == EventType.FILL:
+                    self.portfolio_handler.on_fill(event)
+                else:
+                    raise NotImplemented("Unsupported event.type '%s'" % event.type)
 
     def simulate_trading(self, testing=False):
         """
