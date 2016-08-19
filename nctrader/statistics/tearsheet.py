@@ -566,13 +566,11 @@ class TearsheetStatistics(AbstractStatistics):
         # Save the list of positions
         filename = "positions_" + now.strftime("%Y-%m-%d") + ".csv"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
-        print type(self._get_positions())
         self._get_positions().to_csv(filename)
 
         # Save the equity stats
         filename = "equity_" + now.strftime("%Y-%m-%d") + ".csv"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
-        print type(self.equity_file)
         with open(filename, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.equity_file[0].keys())
             writer.writeheader()
