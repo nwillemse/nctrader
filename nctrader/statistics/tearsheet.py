@@ -4,6 +4,7 @@ from ..price_parser import PriceParser
 from matplotlib.ticker import FuncFormatter
 from matplotlib import cm
 from datetime import datetime
+from collections import OrderedDict
 
 import nctrader.statistics.performance as perf
 
@@ -20,7 +21,9 @@ import csv
 class TearsheetStatistics(AbstractStatistics):
     """
     """
-    def __init__(self, config, portfolio_handler, title=None, benchmark=None):
+    def __init__(self, config, portfolio_handler, title=None, benchmark=None,
+                 start_date=None, end_date=None
+    ):
         """
         Takes in the config, a portfolio handler, optional title
         and benchmark.
@@ -30,6 +33,8 @@ class TearsheetStatistics(AbstractStatistics):
         self.price_handler = portfolio_handler.price_handler
         self.title = '\n'.join(title)
         self.benchmark = benchmark
+        self.start_date = start_date
+        self.end_date = end_date
         self.equity = {}
         self.equity_benchmark = {}
         self.log_scale = False
@@ -40,6 +45,11 @@ class TearsheetStatistics(AbstractStatistics):
         Update equity curve and benchmark equity curve that must be tracked
         over time.
         """
+        if (self.start_date is not None and self.end_date is not None
+            and (timestamp <= self.start_date or timestamp >= self.end_date)
+        ):
+            return
+
         self.equity[timestamp] = PriceParser.display(
             self.portfolio_handler.portfolio.equity
         )
@@ -47,7 +57,7 @@ class TearsheetStatistics(AbstractStatistics):
             self.equity_benchmark[timestamp] = PriceParser.display(
                 self.price_handler.get_last_close(self.benchmark)
             )
-        d = {}
+        d = OrderedDict()
         d['timestamp'] = timestamp
         d['equity'] = PriceParser.display(
             self.portfolio_handler.portfolio.equity
@@ -56,7 +66,6 @@ class TearsheetStatistics(AbstractStatistics):
             self.portfolio_handler.portfolio.cur_cash
         )
         self.equity_file.append(d)
-        # self.positions = {}
 
     def get_results(self):
         """
@@ -115,7 +124,7 @@ class TearsheetStatistics(AbstractStatistics):
         pos = self.portfolio_handler.portfolio.closed_positions
         a = []
         for p in pos:
-            a.append(p.__dict__)
+            a.append(p.__dict__())
 
         df = pd.DataFrame(a)
 
@@ -123,8 +132,6 @@ class TearsheetStatistics(AbstractStatistics):
         df['avg_price'] = df['avg_price'].apply(x)
         df['avg_sld'] = df['avg_sld'].apply(x)
         df['cost_basis'] = df['cost_basis'].apply(x)
-        df['init_commission'] = df['init_commission'].apply(x)
-        df['init_price'] = df['init_price'].apply(x)
         df['market_value'] = df['market_value'].apply(x)
         df['net'] = df['net'].apply(x)
         df['net_incl_comm'] = df['net_incl_comm'].apply(x)
@@ -559,16 +566,15 @@ class TearsheetStatistics(AbstractStatistics):
         # Save the list of positions
         filename = "positions_" + now.strftime("%Y-%m-%d") + ".csv"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
+        print type(self._get_positions())
         self._get_positions().to_csv(filename)
 
         # Save the equity stats
         filename = "equity_" + now.strftime("%Y-%m-%d") + ".csv"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
-        print self.equity_file
-#        self.equity_file.to_csv(filename)
+        print type(self.equity_file)
         with open(filename, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.equity_file[0].keys())
-            #writer.writeheader()
+            writer.writeheader()
             for row in self.equity_file:
                 writer.writerow(row)
-

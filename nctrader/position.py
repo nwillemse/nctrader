@@ -1,8 +1,14 @@
+import itertools
 from numpy import sign
+from collections import OrderedDict
+
 from .price_parser import PriceParser
 
 
 class Position(object):
+
+    newid = itertools.count(start=1).next
+
     def __init__(
         self, action, ticker, init_quantity,
         init_price, init_commission,
@@ -16,6 +22,7 @@ class Position(object):
         Then calculate the initial values and finally update the
         market value of the transaction.
         """
+        self.position_id = Position.newid()
         self.action = action
         self.ticker = ticker
         self.quantity = init_quantity
@@ -114,11 +121,34 @@ class Position(object):
         self.cost_basis = self.quantity * self.avg_price
 
     def __str__(self):
-        return "Position: ticker=%s action=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
-            (self.ticker, self.action, self.quantity, self.buys, self.sells, self.net,
+        return "Position[%s]: ticker=%s action=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
+            (self.position_id, self.ticker, self.action, self.quantity, self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
              PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
              PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
              PriceParser.display(self.cost_basis, 4), PriceParser.display(self.market_value, 4),
              PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl)
             )
+
+    def __dict__(self):
+        od = OrderedDict()
+        od['position_id'] = self.position_id
+        od['ticker'] = self.ticker
+        od['action'] = self.action
+        od['quantity'] = self.quantity
+        od['buys'] = self.buys
+        od['sells'] = self.sells
+        od['net'] = self.net
+        od['net_incl_comm'] = self.net_incl_comm
+        od['net_total'] = self.net_total
+        od['avg_bot'] = self.avg_bot
+        od['avg_sld'] = self.avg_sld
+        od['total_bot'] = self.total_bot
+        od['total_sld'] = self.total_sld
+        od['total_commission'] = self.total_commission
+        od['avg_price'] = self.avg_price
+        od['cost_basis'] = self.cost_basis
+        od['market_value'] = self.market_value
+        od['unrealised_pnl'] = self.unrealised_pnl
+        od['realised_pnl'] = self.realised_pnl
+        return od
