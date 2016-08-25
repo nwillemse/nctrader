@@ -37,7 +37,8 @@ class Portfolio(object):
                 close_price = self.price_handler.get_last_close(ticker)
                 bid = close_price
                 ask = close_price
-            pt.update_market_value(bid, ask)
+            timestamp = self.price_handler.get_last_timestamp(ticker)
+            pt.update_market_value(bid, ask, timestamp)
             self.unrealised_pnl += pt.unrealised_pnl
             pnl_diff = pt.realised_pnl - pt.unrealised_pnl
             self.equity += (
@@ -45,8 +46,8 @@ class Portfolio(object):
             )
 
     def _add_position(
-        self, action, ticker,
-        quantity, price, commission
+        self, action, ticker, quantity,
+        price, commission, entry_date
     ):
         """
         Adds a new Position object to the Portfolio. This
@@ -64,9 +65,10 @@ class Portfolio(object):
                 close_price = self.price_handler.get_last_close(ticker)
                 bid = close_price
                 ask = close_price
+            
             position = Position(
-                action, ticker, quantity,
-                price, commission, bid, ask
+                action, ticker, quantity, price,
+                commission, bid, ask, entry_date
             )
             self.positions[ticker] = position
             self._update_portfolio()
@@ -99,7 +101,9 @@ class Portfolio(object):
                 close_price = self.price_handler.get_last_close(ticker)
                 bid = close_price
                 ask = close_price
-            self.positions[ticker].update_market_value(bid, ask)
+
+            timestamp = self.price_handler.get_last_timestamp(ticker)
+            self.positions[ticker].update_market_value(bid, ask, timestamp)
 
             if self.positions[ticker].quantity == 0:
                 closed = self.positions.pop(ticker)
@@ -114,8 +118,8 @@ class Portfolio(object):
             )
 
     def transact_position(
-        self, action, ticker,
-        quantity, price, commission
+        self, action, ticker, quantity,
+        price, commission, timestamp
     ):
         """
         Handles any new position or modification to
@@ -134,7 +138,7 @@ class Portfolio(object):
         if ticker not in self.positions:
             self._add_position(
                 action, ticker, quantity,
-                price, commission
+                price, commission, timestamp
             )
         else:
             self._modify_position(

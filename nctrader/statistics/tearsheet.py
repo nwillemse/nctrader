@@ -95,7 +95,7 @@ class TearsheetStatistics(AbstractStatistics):
         statistics["equity"] = equity_s
         statistics["returns"] = returns_s
         statistics["cum_returns"] = cum_returns_s
-        statistics["positions"] = self._get_positions()
+        statistics["positions"] = pd.DataFrame(self._get_positions())
 
         # Benchmark statistics if benchmark ticker specified
         if self.benchmark is not None:
@@ -118,33 +118,14 @@ class TearsheetStatistics(AbstractStatistics):
         Retrieve the list of closed Positions objects from the portfolio
         and reformat into a pandas dataframe to be returned
         """
-        def x(p):
-            return PriceParser.display(p)
-
         pos = self.portfolio_handler.portfolio.closed_positions
         a = []
         for p in pos:
-            a.append(p.__dict__())
-
-        df = pd.DataFrame(a)
-
-        df['avg_bot'] = df['avg_bot'].apply(x)
-        df['avg_price'] = df['avg_price'].apply(x)
-        df['avg_sld'] = df['avg_sld'].apply(x)
-        df['cost_basis'] = df['cost_basis'].apply(x)
-        df['market_value'] = df['market_value'].apply(x)
-        df['net'] = df['net'].apply(x)
-        df['net_incl_comm'] = df['net_incl_comm'].apply(x)
-        df['net_total'] = df['net_total'].apply(x)
-        df['realised_pnl'] = df['realised_pnl'].apply(x)
-        df['total_bot'] = df['total_bot'].apply(x)
-        df['total_commission'] = df['total_commission'].apply(x)
-        df['total_sld'] = df['total_sld'].apply(x)
-        df['unrealised_pnl'] = df['unrealised_pnl'].apply(x)
-
-        df['trade_pct'] = (df['avg_sld'] / df['avg_bot'] - 1.0)
-
-        return df
+            d = p.__dict__()
+            d['trade_pct'] = (d['avg_sld'] / d['avg_bot'] - 1.0)
+            a.append(d)
+            
+        return a
 
     def _plot_equity(self, stats, ax=None, **kwargs):
         """
@@ -566,7 +547,12 @@ class TearsheetStatistics(AbstractStatistics):
         # Save the list of positions
         filename = "positions_" + now.strftime("%Y-%m-%d") + ".csv"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
-        self._get_positions().to_csv(filename)
+        pos = self._get_positions()
+        keys = pos[0].keys()
+        with open(filename, 'wb') as output_file:
+            dict_writer = csv.DictWriter(output_file, keys)
+            dict_writer.writeheader()
+            dict_writer.writerows(pos)
 
         # Save the equity stats
         filename = "equity_" + now.strftime("%Y-%m-%d") + ".csv"

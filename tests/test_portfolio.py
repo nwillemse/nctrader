@@ -1,8 +1,8 @@
 import unittest
 
-from qstrader.portfolio import Portfolio
-from qstrader.price_parser import PriceParser
-from qstrader.price_handler.base import AbstractTickPriceHandler
+from nctrader.portfolio import Portfolio
+from nctrader.price_parser import PriceParser
+from nctrader.price_handler.base import AbstractTickPriceHandler
 
 
 class PriceHandlerMock(AbstractTickPriceHandler):
@@ -40,6 +40,13 @@ class TestAmazonGooglePortfolio(unittest.TestCase):
         at various prices/commissions to check the
         arithmetic and cost handling.
         """
+        self.portfolio.transact_position(
+            "SLD", "AMZN", 100,
+            PriceParser.parse(566.56), PriceParser.parse(1.00)
+        )
+
+
+
         # Buy 300 of AMZN over two transactions
         self.portfolio.transact_position(
             "BOT", "AMZN", 100,

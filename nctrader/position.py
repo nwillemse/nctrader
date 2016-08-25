@@ -12,7 +12,7 @@ class Position(object):
     def __init__(
         self, action, ticker, init_quantity,
         init_price, init_commission,
-        bid, ask
+        bid, ask, entry_date
     ):
         """
         Set up the initial "account" of the Position to be
@@ -39,9 +39,12 @@ class Position(object):
         self.total_bot = 0
         self.total_sld = 0
         self.total_commission = init_commission
+        
+        self.entry_date = entry_date
+        self.exit_date = None
 
         self._calculate_initial_value()
-        self.update_market_value(bid, ask)
+        self.update_market_value(bid, ask, entry_date)
 
     def _calculate_initial_value(self):
         """
@@ -67,7 +70,7 @@ class Position(object):
         self.net_total = self.total_sld - self.total_bot
         self.net_incl_comm = self.net_total - self.init_commission
 
-    def update_market_value(self, bid, ask):
+    def update_market_value(self, bid, ask, timestamp):
         """
         The market value is tricky to calculate as we only have
         access to the top of the order book through Interactive
@@ -83,6 +86,7 @@ class Position(object):
         self.market_value = self.quantity * midpoint * sign(self.net)
         self.unrealised_pnl = self.market_value - self.cost_basis
         self.realised_pnl = self.market_value + self.net_incl_comm
+        self.exit_date = timestamp
 
     def transact_shares(self, action, quantity, price, commission):
         """
@@ -121,8 +125,8 @@ class Position(object):
         self.cost_basis = self.quantity * self.avg_price
 
     def __str__(self):
-        return "Position[%s]: ticker=%s action=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
-            (self.position_id, self.ticker, self.action, self.quantity, self.buys, self.sells, self.net,
+        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
+            (self.position_id, self.ticker, self.action, self.entry_date, self.exit_date, self.quantity, self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
              PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
              PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
@@ -138,17 +142,19 @@ class Position(object):
         od['quantity'] = self.quantity
         od['buys'] = self.buys
         od['sells'] = self.sells
-        od['net'] = self.net
-        od['net_incl_comm'] = self.net_incl_comm
-        od['net_total'] = self.net_total
-        od['avg_bot'] = self.avg_bot
-        od['avg_sld'] = self.avg_sld
-        od['total_bot'] = self.total_bot
-        od['total_sld'] = self.total_sld
-        od['total_commission'] = self.total_commission
-        od['avg_price'] = self.avg_price
+        od['entry_date'] = self.entry_date
+        od['exit_date'] = self.exit_date
+        od['avg_price'] = PriceParser.display(self.avg_price)
+        od['net'] = PriceParser.display(self.net)
+        od['net_incl_comm'] = PriceParser.display(self.net_incl_comm)
+        od['net_total'] = PriceParser.display(self.net_total)
+        od['avg_bot'] = PriceParser.display(self.avg_bot)
+        od['avg_sld'] = PriceParser.display(self.avg_sld)
+        od['total_bot'] = PriceParser.display(self.total_bot)
+        od['total_sld'] = PriceParser.display(self.total_sld)
+        od['total_commission'] = PriceParser.display(self.total_commission)
         od['cost_basis'] = self.cost_basis
-        od['market_value'] = self.market_value
-        od['unrealised_pnl'] = self.unrealised_pnl
-        od['realised_pnl'] = self.realised_pnl
+        od['market_value'] = PriceParser.display(self.market_value)
+        od['unrealised_pnl'] = PriceParser.display(self.unrealised_pnl)
+        od['realised_pnl'] = PriceParser.display(self.realised_pnl)
         return od

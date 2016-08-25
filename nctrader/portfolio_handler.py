@@ -71,10 +71,11 @@ class PortfolioHandler(object):
         quantity = fill_event.quantity
         price = fill_event.price
         commission = fill_event.commission
+        timestamp = fill_event.timestamp
         # Create or modify the position from the fill info
         self.portfolio.transact_position(
             action, ticker, quantity,
-            price, commission
+            price, commission, timestamp
         )
 
     def on_signal(self, signal_event):

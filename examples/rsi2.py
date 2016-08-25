@@ -176,8 +176,9 @@ def run(config, testing, tickers):
 
     # Benchmark ticker
     benchmark = None
-    start_dt = datetime(2000, 4, 1)
-    end_dt = datetime(2000, 4, 15)
+    bt_start_dt = datetime(2000, 4, 1)
+    trd_start_dt = datetime(2000, 4, 1)
+    end_dt = datetime(2000, 12, 31)
     #start_dt = datetime(2016, 1, 1)
     #end_dt = datetime(2016, 8, 1)
 
@@ -224,14 +225,14 @@ def run(config, testing, tickers):
 #        config, portfolio_handler
 #    )
     statistics = TearsheetStatistics(
-        config, portfolio_handler, title, benchmark
+        config, portfolio_handler, title, benchmark, trd_start_dt, end_dt
     )
 
     # Set up the backtest
     backtest = Backtest(
         price_handler, strategy, portfolio_handler, execution_handler,
         position_sizer, risk_manager, statistics, initial_equity,
-        start_dt, end_dt
+        bt_start_dt, end_dt
     )
     results = backtest.simulate_trading(testing=testing)
 
