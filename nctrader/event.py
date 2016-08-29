@@ -159,6 +159,11 @@ class SignalEvent(Event):
         self.ticker = ticker
         self.action = action
 
+    def __str__(self):
+        return "%s ticker:%s action:%s" % (
+            str(self.type), str(self.ticker), str(self.action)
+        )
+
 
 class OrderEvent(Event):
     """
@@ -188,6 +193,12 @@ class OrderEvent(Event):
             "Order: Ticker=%s, Action=%s, Quantity=%s" % (
                 self.ticker, self.action, self.quantity
             )
+        )
+
+    def __str__(self):
+        return "%s ticker:%s action:%s quantity:%s" % (
+            str(self.type), str(self.ticker),
+            str(self.action), str(self.quantity)
         )
 
 
@@ -228,3 +239,10 @@ class FillEvent(Event):
         self.exchange = exchange
         self.price = price
         self.commission = commission
+
+    def __str__(self):
+        return "%s ticker:%s timestamp:%s action:%s quantity:%s exchange:%s price:%s commission:%s" % (
+            str(self.type), str(self.ticker), str(self.timestamp),
+            str(self.action), str(self.quantity), str(self.action),
+            str(self.price), str(self.commission)
+        )

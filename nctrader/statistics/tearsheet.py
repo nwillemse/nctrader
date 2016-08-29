@@ -269,7 +269,7 @@ class TearsheetStatistics(AbstractStatistics):
         sortino = perf.create_sortino_ratio(returns)
         rsq = perf.rsquared(range(cum_returns.shape[0]), cum_returns)
         dd, dd_max, dd_dur = perf.create_drawdowns(cum_returns)
-        trd_yr = positions.shape[0] / ((returns.index[-1] - returns.index[0]).days / 365.0)
+        trd_yr = positions.shape[0] / (((returns.index[-1] - returns.index[0]).days + 1) / 365.0)
 
         ax.text(0.25, 8.9, 'Total Return', fontsize=8)
         ax.text(7.50, 8.9, '{:.0%}'.format(tot_ret), fontweight='bold', horizontalalignment='right', fontsize=8)

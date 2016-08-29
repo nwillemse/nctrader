@@ -54,6 +54,6 @@ class ExampleCompliance(AbstractCompliance):
             writer.writerow([
                 fill.timestamp, fill.ticker,
                 fill.action, fill.quantity,
-                fill.exchange, PriceParser.display(fill.price),
+                fill.exchange, PriceParser.display(fill.price, 5),
                 PriceParser.display(fill.commission)
             ])
