@@ -38,6 +38,7 @@ class TickEvent(Event):
         self.time = time
         self.bid = bid
         self.ask = ask
+        self.priority = 100
 
     def __str__(self):
         return "Type: %s, Ticker: %s, Time: %s, Bid: %s, Ask: %s" % (
@@ -47,6 +48,9 @@ class TickEvent(Event):
 
     def __repr__(self):
         return str(self)
+
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
 
 
 class BarEvent(Event):
@@ -90,6 +94,7 @@ class BarEvent(Event):
         self.volume = volume
         self.adj_close_price = adj_close_price
         self.period_readable = self._readable_period()
+        self.priority = 100
 
     def _readable_period(self):
         """
@@ -141,6 +146,9 @@ class BarEvent(Event):
     def __repr__(self):
         return str(self)
 
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
+
 
 class SignalEvent(Event):
     """
@@ -158,11 +166,15 @@ class SignalEvent(Event):
         self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
+        self.priority = 200
 
     def __str__(self):
         return "%s ticker:%s action:%s" % (
             str(self.type), str(self.ticker), str(self.action)
         )
+
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
 
 
 class OrderEvent(Event):
@@ -184,6 +196,7 @@ class OrderEvent(Event):
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
+        self.priority = 300
 
     def print_order(self):
         """
@@ -200,6 +213,9 @@ class OrderEvent(Event):
             str(self.type), str(self.ticker),
             str(self.action), str(self.quantity)
         )
+
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
 
 
 class FillEvent(Event):
@@ -239,6 +255,7 @@ class FillEvent(Event):
         self.exchange = exchange
         self.price = price
         self.commission = commission
+        self.priority = 400
 
     def __str__(self):
         return "%s ticker:%s timestamp:%s action:%s quantity:%s exchange:%s price:%s commission:%s" % (
@@ -246,3 +263,6 @@ class FillEvent(Event):
             str(self.action), str(self.quantity), str(self.action),
             str(self.price), str(self.commission)
         )
+
+    def __cmp__(self, other):
+        return cmp(self.priority, other.priority)
