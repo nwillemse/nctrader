@@ -1,5 +1,5 @@
 from .base import AbstractExecutionHandler
-from ..event import (FillEvent, EventType)
+from ..event import (FillEvent, EventType, StopType, StopMode)
 from ..price_parser import PriceParser
 
 
@@ -35,6 +35,30 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
         """
         return PriceParser.parse(1.00)
 
+    def calculate_stop_price(self, action, fill_price, stoploss):
+        """
+        """
+        stop_price = 0
+        if stoploss is None:
+            return stop_price
+
+        stop_type = stoploss['StopType']
+        stop_mode = stoploss['StopMode']
+        stop_amount = stoploss['StopAmount']
+        
+        if stop_type == StopType.LOSS:
+            mul = -1 if action == "BOT" else 1
+        else:
+            print "StopType not implemented:", stop_type
+            return 0
+        
+        if stop_mode == StopMode.POINTS:
+            stop_price = fill_price + (stop_amount * mul)
+        elif stop_mode == StopMode.PERCENT:
+            stop_price = fill_price * ((1*mul) + stop_amount)
+
+        return stop_price
+        
     def execute_order(self, event):
         """
         Converts OrderEvents into FillEvents "naively",
@@ -65,12 +89,17 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
             exchange = "ARCA"
             commission = self.calculate_ib_commission()
 
+            # Calculate stop loss price
+            stop_price = self.calculate_stop_price(
+                event.action, fill_price, event.stoploss
+            )
+
             # Create the FillEvent and place on the events queue
             fill_event = FillEvent(
                 timestamp, ticker,
                 action, quantity,
                 exchange, fill_price,
-                commission
+                commission, stop_price
             )
             self.events_queue.put(fill_event)
 

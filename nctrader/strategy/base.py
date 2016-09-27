@@ -23,6 +23,13 @@ class AbstractStrategy(object):
         """
         raise NotImplementedError("Should implement calculate_signals()")
 
+    @abstractmethod
+    def on_fill(self, event):
+        """
+        Called after Filled event processed.
+        """
+        raise NotImplementedError("Should implement on_fill()")
+
 
 class Strategies(AbstractStrategy):
     """
@@ -34,3 +41,7 @@ class Strategies(AbstractStrategy):
     def calculate_signals(self, event):
         for strategy in self._lst_strategies:
             strategy.calculate_signals(event)
+
+    def on_fill(self, event):
+        for strategy in self._lst_strategies:
+            strategy.on_fill(event)

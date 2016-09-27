@@ -3,7 +3,9 @@ from __future__ import print_function
 from enum import Enum
 
 
-EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL")
+EventType = Enum("EventType", "TICK BAR SIGNAL ORDER STOPORDER FILL")
+StopType = Enum("StopType", "NONE LOSS PROFIT TRAILING NBAR")
+StopMode = Enum("StopMode", "NONE PERCENT POINTS")
 
 
 class Event(object):
@@ -155,7 +157,9 @@ class SignalEvent(Event):
     Handles the event of sending a Signal from a Strategy object.
     This is received by a Portfolio object and acted upon.
     """
-    def __init__(self, ticker, action):
+    def __init__(self, ticker, action, stop_type=StopType.NONE,
+                 stop_mode=StopMode.NONE, stop_amount=0.0
+    ):
         """
         Initialises the SignalEvent.
 
@@ -166,11 +170,14 @@ class SignalEvent(Event):
         self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
+        self.stoploss = {'StopType': stop_type,
+                         'StopMode': stop_mode,
+                         'StopAmount': stop_amount}
         self.priority = 200
 
     def __str__(self):
-        return "%s ticker:%s action:%s" % (
-            str(self.type), str(self.ticker), str(self.action)
+        return "%s ticker:%s action:%s stoploss:%s" % (
+            str(self.type), str(self.ticker), str(self.action), self.stoploss
         )
 
     def __cmp__(self, other):
@@ -183,7 +190,7 @@ class OrderEvent(Event):
     The order contains a ticker (e.g. GOOG), action (BOT or SLD)
     and quantity.
     """
-    def __init__(self, ticker, action, quantity):
+    def __init__(self, ticker, action, quantity, stoploss=None):
         """
         Initialises the OrderEvent.
 
@@ -191,11 +198,13 @@ class OrderEvent(Event):
         ticker - The ticker symbol, e.g. 'GOOG'.
         action - 'BOT' (for long) or 'SLD' (for short).
         quantity - The quantity of shares to transact.
+        stoploss - Dict with stoploss info: StopType, StopMode, StopAmount.
         """
         self.type = EventType.ORDER
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
+        self.stoploss = stoploss
         self.priority = 300
 
     def print_order(self):
@@ -203,15 +212,15 @@ class OrderEvent(Event):
         Outputs the values within the OrderEvent.
         """
         print(
-            "Order: Ticker=%s, Action=%s, Quantity=%s" % (
-                self.ticker, self.action, self.quantity
+            "Order: Ticker=%s, Action=%s, Quantity=%s, StopLoss=%s" % (
+                self.ticker, self.action, self.quantity, self.stop_loss
             )
         )
 
     def __str__(self):
-        return "%s ticker:%s action:%s quantity:%s" % (
+        return "%s ticker:%s action:%s quantity:%s stoploss:%s" % (
             str(self.type), str(self.ticker),
-            str(self.action), str(self.quantity)
+            str(self.action), str(self.quantity), str(self.stoploss)
         )
 
     def __cmp__(self, other):
@@ -234,7 +243,7 @@ class FillEvent(Event):
         self, timestamp, ticker,
         action, quantity,
         exchange, price,
-        commission
+        commission, stop_price
     ):
         """
         Initialises the FillEvent object.
@@ -246,6 +255,7 @@ class FillEvent(Event):
         exchange - The exchange where the order was filled.
         price - The price at which the trade was filled
         commission - The brokerage commission for carrying out the trade.
+        stop_price - Price at which a stop loss order will initiate.
         """
         self.type = EventType.FILL
         self.timestamp = timestamp
@@ -255,13 +265,14 @@ class FillEvent(Event):
         self.exchange = exchange
         self.price = price
         self.commission = commission
+        self.stop_price = stop_price
         self.priority = 400
 
     def __str__(self):
-        return "%s ticker:%s timestamp:%s action:%s quantity:%s exchange:%s price:%s commission:%s" % (
+        return "%s ticker:%s timestamp:%s action:%s quantity:%s exchange:%s price:%s commission:%s stop_price:%s" % (
             str(self.type), str(self.ticker), str(self.timestamp),
             str(self.action), str(self.quantity), str(self.action),
-            str(self.price), str(self.commission)
+            str(self.price), str(self.commission), str(self.stop_price)
         )
 
     def __cmp__(self, other):

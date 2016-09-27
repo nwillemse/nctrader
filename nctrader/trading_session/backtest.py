@@ -73,6 +73,7 @@ class Backtest(object):
                     self.execution_handler.execute_order(event)
                 elif event.type == EventType.FILL:
                     self.portfolio_handler.on_fill(event)
+                    self.strategy.on_fill(event)
                 else:
                     raise NotImplemented("Unsupported event.type '%s'" % event.type)
 

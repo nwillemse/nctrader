@@ -45,9 +45,31 @@ class Portfolio(object):
                 pt.market_value - pt.cost_basis + pnl_diff
             )
 
+
+    def _check_for_exits(self):
+        """
+        """
+        exit_pos = []
+        for ticker in self.positions:
+            # Check if stoploss was hit
+            # Skip entry bar
+            pos = self.positions[ticker]
+            timestamp = self.price_handler.get_last_timestamp(ticker)
+            stop_price = pos.stop_price
+            if pos.action == 'BOT' and pos.entry_date < timestamp:
+                print "Check for stoploss below price"
+            elif pos.action == 'SLD' and pos.entry_date < timestamp:
+                high_price = self.price_handler.get_last_high(ticker)
+                if high_price > stop_price:
+                    exit_pos.append(pos)
+                    print "Stoploss hit:", timestamp, high_price, stop_price
+
+        return exit_pos
+            
+
     def _add_position(
-        self, action, ticker, quantity,
-        price, commission, entry_date
+        self, action, ticker, quantity, price,
+        stop_price, commission, entry_date
     ):
         """
         Adds a new Position object to the Portfolio. This
@@ -67,7 +89,7 @@ class Portfolio(object):
                 ask = close_price
             
             position = Position(
-                action, ticker, quantity, price,
+                action, ticker, quantity, price, stop_price,
                 commission, bid, ask, entry_date
             )
             self.positions[ticker] = position
@@ -118,8 +140,8 @@ class Portfolio(object):
             )
 
     def transact_position(
-        self, action, ticker, quantity,
-        price, commission, timestamp
+        self, action, ticker, quantity, price,
+        stop_price, commission, timestamp
     ):
         """
         Handles any new position or modification to
@@ -129,7 +151,6 @@ class Portfolio(object):
         Hence, this single method will be called by the
         PortfolioHandler to update the Portfolio itself.
         """
-
         if action == "BOT":
             self.cur_cash -= ((quantity * price) + commission)
         elif action == "SLD":
@@ -137,8 +158,8 @@ class Portfolio(object):
 
         if ticker not in self.positions:
             self._add_position(
-                action, ticker, quantity,
-                price, commission, timestamp
+                action, ticker, quantity, price,
+                stop_price, commission, timestamp
             )
         else:
             self._modify_position(

@@ -11,7 +11,7 @@ class Position(object):
 
     def __init__(
         self, action, ticker, init_quantity,
-        init_price, init_commission,
+        init_price, stop_price, init_commission,
         bid, ask, entry_date
     ):
         """
@@ -27,6 +27,7 @@ class Position(object):
         self.ticker = ticker
         self.quantity = init_quantity
         self.init_price = init_price
+        self.stop_price = stop_price
         self.init_commission = init_commission
 
         self.realised_pnl = 0
@@ -125,13 +126,14 @@ class Position(object):
         self.cost_basis = self.quantity * self.avg_price
 
     def __str__(self):
-        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
+        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f stop_price=%0.5f" % \
             (self.position_id, self.ticker, self.action, self.entry_date, self.exit_date, self.quantity, self.buys, self.sells, self.net,
-             PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
+             PriceParser.display(self.avg_bot, 5), PriceParser.display(self.avg_sld, 5),
              PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
-             PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
-             PriceParser.display(self.cost_basis, 4), PriceParser.display(self.market_value, 4),
-             PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl)
+             PriceParser.display(self.total_commission, 5), PriceParser.display(self.avg_price, 5),
+             PriceParser.display(self.cost_basis, 5), PriceParser.display(self.market_value, 5),
+             PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl),
+             PriceParser.display(self.stop_price, 5)
             )
 
     def __dict__(self):
@@ -145,6 +147,7 @@ class Position(object):
         od['entry_date'] = self.entry_date
         od['exit_date'] = self.exit_date
         od['avg_price'] = PriceParser.display(self.avg_price, 5)
+        od['stop_price'] = PriceParser.display(self.stop_price, 5)
         od['net'] = PriceParser.display(self.net, 5)
         od['net_incl_comm'] = PriceParser.display(self.net_incl_comm, 5)
         od['net_total'] = PriceParser.display(self.net_total, 5)

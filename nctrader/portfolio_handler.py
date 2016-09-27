@@ -1,5 +1,6 @@
 from .order.suggested import SuggestedOrder
 from .portfolio import Portfolio
+from .event import StopType
 
 
 class PortfolioHandler(object):
@@ -40,8 +41,15 @@ class PortfolioHandler(object):
         At this stage they are simply "suggestions" that the
         RiskManager will either verify, modify or eliminate.
         """
+        stoploss = None
+        if signal_event.stoploss['StopType'] is not StopType.NONE:
+            stoploss = {}
+            stoploss['StopType'] = signal_event.stoploss['StopType']
+            stoploss['StopMode'] = signal_event.stoploss['StopMode']
+            stoploss['StopAmount'] = signal_event.stoploss['StopAmount']
+
         order = SuggestedOrder(
-            signal_event.ticker, signal_event.action
+            signal_event.ticker, signal_event.action, stoploss=stoploss
         )
         return order
 
@@ -72,10 +80,12 @@ class PortfolioHandler(object):
         price = fill_event.price
         commission = fill_event.commission
         timestamp = fill_event.timestamp
+        stop_price = fill_event.stop_price
+
         # Create or modify the position from the fill info
         self.portfolio.transact_position(
-            action, ticker, quantity,
-            price, commission, timestamp
+            action, ticker, quantity, price,
+            stop_price, commission, timestamp
         )
 
     def on_signal(self, signal_event):
@@ -121,3 +131,6 @@ class PortfolioHandler(object):
         based on last bid/ask of each ticker.
         """
         self.portfolio._update_portfolio()
+        exit_pos = self.portfolio._check_for_exits()
+        for pos in exit_pos:
+            print "update_portfolio_value: place ExitOrder"
