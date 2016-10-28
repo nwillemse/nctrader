@@ -36,16 +36,17 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         the specified CSV data directory, converting them into
         them into a pandas DataFrame, stored in a dictionary.
         """
-        qry="""SELECT d.price_date AS Date,
+        qry="""SELECT d.timestamp AS Date,
                       d.open_price AS Open,
                       d.high_price AS High,
                       d.low_price AS Low,
                       d.close_price AS Close,
                       d.volume AS Volume
-                 FROM daily_data d,
+                 FROM bar_data d,
                       symbol s
                 WHERE s.id = d.symbol_id
                   AND s.ticker = '%s'
+                  AND d.bar_size = 'D'
         """
         self.tickers_data[ticker] = pd.read_sql_query(
             qry % ticker, self.engine, index_col='Date', parse_dates=['Date']

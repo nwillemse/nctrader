@@ -141,9 +141,12 @@ class TearsheetStatistics(AbstractStatistics):
 
         y_axis_formatter = FuncFormatter(format_two_dec)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
+        ax.yaxis.grid(linestyle=':')
         ax.xaxis.set_tick_params(reset=True)
         ax.xaxis.set_major_locator(mdates.YearLocator(1))
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+        ax.xaxis.grid(linestyle=':')
+
 
         if self.benchmark is not None:
             benchmark = stats['cum_returns_b']
@@ -159,6 +162,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.set_ylabel('Cumulative returns')
         ax.legend(loc='best')
         ax.set_xlabel('')
+        plt.setp(ax.get_xticklabels(), visible=True, rotation=0, ha='center')
 
         if self.log_scale:
             ax.set_yscale('log')
@@ -179,11 +183,18 @@ class TearsheetStatistics(AbstractStatistics):
 
         y_axis_formatter = FuncFormatter(format_perc)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
+        ax.yaxis.grid(linestyle=':')
+        ax.xaxis.set_tick_params(reset=True)
+        ax.xaxis.set_major_locator(mdates.YearLocator(1))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+        ax.xaxis.grid(linestyle=':')
+
 
         underwater = -100 * drawdown
         underwater.plot(ax=ax, lw=2, kind='area', color='red', alpha=0.3, **kwargs)
         ax.set_ylabel('')
         ax.set_xlabel('')
+        plt.setp(ax.get_xticklabels(), visible=True, rotation=0, ha='center')
         ax.set_title('Drawdown (%)', fontweight='bold')
         return ax
 
@@ -236,6 +247,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         y_axis_formatter = FuncFormatter(format_perc)
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
+        ax.yaxis.grid(linestyle=':')
 
         yly_ret = perf.aggregate_returns(returns, 'yearly') * 100.0
         yly_ret.plot(ax=ax, kind="bar")
@@ -243,6 +255,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.set_ylabel('')
         ax.set_xlabel('')
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+        ax.xaxis.grid(False)
 
         return ax
 
@@ -514,7 +527,7 @@ class TearsheetStatistics(AbstractStatistics):
         stats = self.get_results()
 
         ax_equity = plt.subplot(gs[:2, :])
-        ax_drawdown = plt.subplot(gs[2, :], sharex=ax_equity)
+        ax_drawdown = plt.subplot(gs[2, :])
         ax_monthly_returns = plt.subplot(gs[3, :2])
         ax_yearly_returns = plt.subplot(gs[3, 2])
         ax_txt_curve = plt.subplot(gs[4, 0])
