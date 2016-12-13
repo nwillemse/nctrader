@@ -120,7 +120,7 @@ class Position(object):
                 self.realised_pnl += ((price * quantity - self.avg_sld * quantity) * self.symbol.big_point_value * 
                     sign(self.net) - int(quantity / self.sells * self.comm_sld + commission)
                 )
-                self.trade_pct = self.avg_bot / float(self.avg_sld) - 1
+                self.trade_pct = -1 * (self.avg_bot / float(self.avg_sld) - 1)
                 
 
         # action == "SLD"

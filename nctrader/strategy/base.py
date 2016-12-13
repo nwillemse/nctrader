@@ -17,12 +17,18 @@ class AbstractStrategy(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def calculate_signals(self, event):
+    def on_bar(self, event):
         """
-        Provides the mechanisms to calculate the list of signals.
+        Gets called whenever a bar event received.
         """
-        raise NotImplementedError("Should implement calculate_signals()")
+        raise NotImplementedError("Should implement on_bar()")
 
+    @abstractmethod
+    def on_tick(self, event):
+        """
+        Gets called whenever a tick event received.
+        """
+        raise NotImplementedError("Should implement on_tick()")
 
 class Strategies(AbstractStrategy):
     """
@@ -31,6 +37,10 @@ class Strategies(AbstractStrategy):
     def __init__(self, *strategies):
         self._lst_strategies = strategies
 
-    def calculate_signals(self, event):
+    def on_bar(self, event):
         for strategy in self._lst_strategies:
-            strategy.calculate_signals(event)
+            strategy.on_bar(event)
+
+    def on_tick(self, event):
+        for strategy in self._lst_strategies:
+            strategy.on_tick(event)

@@ -62,9 +62,14 @@ class Backtest(object):
                     and (event.time < self.start_date or event.time > self.end_date)
                 ):
                     continue
-                if (event.type == EventType.TICK or event.type == EventType.BAR):
+                if event.type == EventType.TICK:
                     self.cur_time = event.time
-                    self.strategy.calculate_signals(event)
+                    self.strategy.on_tick(event)
+                    self.portfolio_handler.update_portfolio_value()
+                    self.statistics.update(event.time)
+                if event.type == EventType.BAR:
+                    self.cur_time = event.time
+                    self.strategy.on_bar(event)
                     self.portfolio_handler.update_portfolio_value()
                     self.statistics.update(event.time)
                 elif event.type == EventType.SIGNAL:
