@@ -122,7 +122,6 @@ class TearsheetStatistics(AbstractStatistics):
         a = []
         for p in pos:
             d = p.__dict__()
-            d['trade_pct'] = (d['avg_sld'] / d['avg_bot'] - 1.0)
             a.append(d)
             
         return a

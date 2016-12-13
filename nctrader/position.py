@@ -48,6 +48,7 @@ class Position(object):
         
         self.entry_date = entry_date
         self.exit_date = None
+        self.trade_pct = 0.0
         
         self.symbol = db_session.query(Symbol).filter(Symbol.ticker == ticker).one()
 
@@ -116,7 +117,11 @@ class Position(object):
             if self.action != "SLD":
                 self.avg_price = (self.total_bot + self.comm_bot) // self.buys // self.symbol.big_point_value
             else:
-                self.realised_pnl += (price * quantity - self.avg_sld * quantity) * self.symbol.big_point_value * sign(self.net) - int(quantity / self.sells * self.comm_sld + commission)
+                self.realised_pnl += ((price * quantity - self.avg_sld * quantity) * self.symbol.big_point_value * 
+                    sign(self.net) - int(quantity / self.sells * self.comm_sld + commission)
+                )
+                self.trade_pct = self.avg_bot / float(self.avg_sld) - 1
+                
 
         # action == "SLD"
         else:
@@ -127,7 +132,10 @@ class Position(object):
             if self.action != "BOT":
                 self.avg_price = (self.total_sld - self.comm_sld) // self.sells // self.symbol.big_point_value
             else:
-                self.realised_pnl += (price * quantity - self.avg_bot * quantity) * self.symbol.big_point_value * sign(self.net) - int(quantity / self.buys * self.comm_bot + commission)
+                self.realised_pnl += ((price * quantity - self.avg_bot * quantity) * self.symbol.big_point_value *
+                    sign(self.net) - int(quantity / self.buys * self.comm_bot + commission)
+                )
+                self.trade_pct = self.avg_sld / float(self.avg_bot) - 1
 
         # Adjust net values, including commissions
         self.net = self.buys - self.sells
@@ -141,13 +149,16 @@ class Position(object):
         
         
     def __str__(self):
-        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f" % \
-            (self.position_id, self.ticker, self.action, self.entry_date, self.exit_date, self.quantity, self.buys, self.sells, self.net,
+        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f" % \
+            (self.position_id, self.ticker, self.action, self.entry_date, self.exit_date, self.quantity, 
+             self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
              PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
-             PriceParser.display(self.comm_bot, 4), PriceParser.display(self.comm_sld, 4), PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
+             PriceParser.display(self.comm_bot, 4), PriceParser.display(self.comm_sld, 4),
+             PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
              PriceParser.display(self.cost_basis, 4), PriceParser.display(self.market_value, 4),
-             PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl)
+             PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl),
+             self.trade_pct
             )
 
     def __dict__(self):
@@ -173,4 +184,5 @@ class Position(object):
         od['market_value'] = PriceParser.display(self.market_value)
         od['unrealised_pnl'] = PriceParser.display(self.unrealised_pnl)
         od['realised_pnl'] = PriceParser.display(self.realised_pnl)
+        od['trade_pct'] = self.trade_pct
         return od

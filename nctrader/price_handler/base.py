@@ -105,6 +105,6 @@ class AbstractBarPriceHandler(AbstractPriceHandler):
         else:
             print(
                 "Close price for ticker %s is not "
-                "available from the YahooDailyBarPriceHandler."
+                "available from the AbstractBarPriceHandler."
             )
             return None
