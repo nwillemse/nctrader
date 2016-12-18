@@ -161,7 +161,9 @@ class SignalEvent(Event):
 
         Parameters:
         ticker - The ticker symbol, e.g. 'GOOG'.
-        action - 'BOT' (for long) or 'SLD' (for short).
+        action - 'BOT'  go long
+                 'SLD'  go short
+                 'EXIT' close the trade out completely
         """
         self.type = EventType.SIGNAL
         self.ticker = ticker

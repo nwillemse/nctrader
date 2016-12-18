@@ -10,5 +10,7 @@ class FixedPositionSizer(AbstractPositionSizer):
         This TestPositionSizer object simply modifies
         the quantity to be 100 of any share transacted.
         """
-        initial_order.quantity = self.default_quantity
+        if initial_order.quantity == 0:
+            initial_order.quantity = self.default_quantity
+
         return initial_order

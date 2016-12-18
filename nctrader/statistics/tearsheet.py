@@ -39,33 +39,39 @@ class TearsheetStatistics(AbstractStatistics):
         self.equity_benchmark = {}
         self.log_scale = False
         self.equity_file = []
+        self.current_timestamp = None
+        self.current_line = OrderedDict()
 
-    def update(self, timestamp):
+
+    def update(self, event):
         """
         Update equity curve and benchmark equity curve that must be tracked
         over time.
         """
-        if (self.start_date is not None and self.end_date is not None
-            and (timestamp <= self.start_date or timestamp >= self.end_date)
-        ):
+        if self.current_timestamp == None or event.time < self.start_date:
+            self.current_timestamp = event.time
             return
 
-        self.equity[timestamp] = PriceParser.display(
-            self.portfolio_handler.portfolio.equity
-        )
-        if self.benchmark is not None:
-            self.equity_benchmark[timestamp] = PriceParser.display(
-                self.price_handler.get_last_close(self.benchmark)
+        if event.time <> self.current_timestamp and len(self.current_line) > 0:
+            self.equity_file.append(self.current_line.copy())
+            self.current_line.clear()
+        else:
+            self.current_line['timestamp'] = event.time
+            self.equity[event.time] = PriceParser.display(
+                self.portfolio_handler.portfolio.equity
             )
-        d = OrderedDict()
-        d['timestamp'] = timestamp
-        d['equity'] = PriceParser.display(
-            self.portfolio_handler.portfolio.equity
-        )
-        d['cur_cash'] = PriceParser.display(
-            self.portfolio_handler.portfolio.cur_cash
-        )
-        self.equity_file.append(d)
+            self.current_line['equity'] = PriceParser.display(
+                self.portfolio_handler.portfolio.equity
+            )
+            self.current_line['contracts'] = (
+                self.portfolio_handler.portfolio.open_quantity
+            )
+            #self.current_line['cur_cash'] = PriceParser.display(
+            #    self.portfolio_handler.portfolio.cur_cash
+            #)
+
+        self.current_timestamp = event.time
+
 
     def get_results(self):
         """
@@ -113,6 +119,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         return statistics
 
+
     def _get_positions(self):
         """
         Retrieve the list of closed Positions objects from the portfolio
@@ -123,8 +130,9 @@ class TearsheetStatistics(AbstractStatistics):
         for p in pos:
             d = p.__dict__()
             a.append(d)
-            
+
         return a
+
 
     def _plot_equity(self, stats, ax=None, **kwargs):
         """
@@ -168,6 +176,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         return ax
 
+
     def _plot_drawdown(self, stats, ax=None, **kwargs):
         """
         Plots the underwater curve
@@ -196,6 +205,7 @@ class TearsheetStatistics(AbstractStatistics):
         plt.setp(ax.get_xticklabels(), visible=True, rotation=0, ha='center')
         ax.set_title('Drawdown (%)', fontweight='bold')
         return ax
+
 
     def _plot_monthly_returns(self, stats, ax=None, **kwargs):
         """
@@ -232,6 +242,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         return ax
 
+
     def _plot_yearly_returns(self, stats, ax=None, **kwargs):
         """
         Plots a barplot of returns by year.
@@ -257,6 +268,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.xaxis.grid(False)
 
         return ax
+
 
     def _plot_txt_curve(self, stats, ax=None, **kwargs):
         """
@@ -345,6 +357,7 @@ class TearsheetStatistics(AbstractStatistics):
         ax.axis([0, 10, 0, 10])
         return ax
 
+
     def _plot_txt_trade(self, stats, ax=None, **kwargs):
         """
         Outputs the statistics for the trades.
@@ -411,6 +424,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         ax.axis([0, 10, 0, 10])
         return ax
+
 
     def _plot_txt_time(self, stats, ax=None, **kwargs):
         """
@@ -493,6 +507,7 @@ class TearsheetStatistics(AbstractStatistics):
 
         ax.axis([0, 10, 0, 10])
         return ax
+
 
     def plot_results(self, filename=None):
         """

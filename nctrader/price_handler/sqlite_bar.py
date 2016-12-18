@@ -3,6 +3,8 @@ import pandas as pd
 from sqlalchemy import create_engine
 from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
+from .db import db_session
+from .db.models import Symbol
 from ..event import BarEvent
 
 
@@ -25,6 +27,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         self.continue_backtest = True
         self.tickers = {}
         self.tickers_data = {}
+        self.tickers_info = {}
         if init_tickers is not None:
             for ticker in init_tickers:
                 self.subscribe_ticker(ticker)
@@ -32,8 +35,8 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
 
     def _load_ticker_price(self, ticker):
         """
-        Opens the CSV files containing the equities ticks from
-        the specified CSV data directory, converting them into
+        Opens the SQLITE database containing the ticker data from
+        the specified sqlite database, converting them into
         them into a pandas DataFrame, stored in a dictionary.
         """
         qry="""SELECT d.timestamp AS Date,
@@ -53,6 +56,18 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         )
         self.tickers_data[ticker]["Ticker"] = ticker
 
+    def _load_ticker_info(self, ticker):
+        """
+        Opens up the sqlite database, loads the Symbol table into a dictionary
+        containing all the additional information including big_point_value,
+        tick_size, margin
+        """
+        symbol_info = db_session.query(Symbol).filter(
+            Symbol.ticker == ticker).one()
+        symbol_info.margin = PriceParser.parse(symbol_info.margin)
+        return symbol_info
+
+        
     def _merge_sort_ticker_data(self):
         """
         Concatenates all of the separate equities DataFrames
@@ -86,7 +101,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
             except OSError:
                 print(
                     "Could not subscribe ticker %s "
-                    "as no data was found in sqlite database.." % ticker
+                    "as no data was found in sqlite database..." % ticker
                 )
         else:
             print(
@@ -94,6 +109,16 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
                 "as is already subscribed." % ticker
             )
 
+        if ticker not in self.tickers_info:
+            try:
+                ticker_info = self._load_ticker_info(ticker)
+                self.tickers_info[ticker] = ticker_info
+            except OSError:
+                print(
+                    "Could not load ticker info %s as no data"
+                    "was found in sqlite database table Symbol..." % ticker
+                )
+            
     def _create_event(self, index, period, ticker, row):
         """
         Obtain all elements of the bar from a row of dataframe

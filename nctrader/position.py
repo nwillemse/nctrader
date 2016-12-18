@@ -4,8 +4,6 @@ import itertools
 from numpy import sign
 from collections import OrderedDict
 
-from nctrader.price_handler.db.models import Symbol
-from nctrader.price_handler.db import db_session
 from .price_parser import PriceParser
 
 
@@ -16,7 +14,7 @@ class Position(object):
     def __init__(
         self, action, ticker, init_quantity,
         init_price, init_commission,
-        bid, ask, entry_date
+        bid, ask, entry_date, bpv=1
     ):
         """
         Set up the initial "account" of the Position to be
@@ -32,6 +30,7 @@ class Position(object):
         self.quantity = init_quantity
         self.init_price = init_price
         self.init_commission = init_commission
+        self.bpv = bpv
 
         self.realised_pnl = 0
         self.unrealised_pnl = 0
@@ -50,8 +49,6 @@ class Position(object):
         self.exit_date = None
         self.trade_pct = 0.0
         
-        self.symbol = db_session.query(Symbol).filter(Symbol.ticker == ticker).one()
-
         self._calculate_initial_value()
         self.update_market_value(bid, ask, entry_date)
 
@@ -66,17 +63,17 @@ class Position(object):
         if self.action == "BOT":
             self.buys = self.quantity
             self.avg_bot = self.init_price
-            self.total_bot = self.buys * self.avg_bot * self.symbol.big_point_value
+            self.total_bot = self.buys * self.avg_bot * self.bpv
             self.comm_bot = self.init_commission
-            self.avg_price = (self.total_bot + self.comm_bot) // self.quantity // self.symbol.big_point_value
-            self.cost_basis = self.quantity * self.avg_price * self.symbol.big_point_value
+            self.avg_price = (self.total_bot + self.comm_bot) // self.quantity // self.bpv
+            self.cost_basis = self.quantity * self.avg_price * self.bpv
         else:  # action == "SLD"
             self.sells = self.quantity
             self.avg_sld = self.init_price
-            self.total_sld = self.sells * self.avg_sld * self.symbol.big_point_value
+            self.total_sld = self.sells * self.avg_sld * self.bpv
             self.comm_sld = self.init_commission
-            self.avg_price = (self.total_sld - self.comm_sld) // self.quantity // self.symbol.big_point_value
-            self.cost_basis = -self.quantity * self.avg_price * self.symbol.big_point_value
+            self.avg_price = (self.total_sld - self.comm_sld) // self.quantity // self.bpv
+            self.cost_basis = -self.quantity * self.avg_price * self.bpv
         self.net = self.buys - self.sells
         self.net_total = (self.total_bot - self.total_sld) * sign(self.net)
         self.total_commission = self.comm_bot + self.comm_sld
@@ -95,7 +92,7 @@ class Position(object):
         and loss of any transactions.
         """
         midpoint = (bid + ask) // 2
-        self.market_value = self.quantity * midpoint * sign(self.net) * self.symbol.big_point_value
+        self.market_value = self.quantity * midpoint * sign(self.net) * self.bpv
         self.unrealised_pnl = (self.market_value - self.cost_basis)
         self.exit_date = timestamp
 
@@ -108,16 +105,17 @@ class Position(object):
         bought/sold, the cost basis and PnL calculations,
         as carried out through Interactive Brokers TWS.
         """
+        #print action, quantity, price, commission
         # Adjust total bought and sold
         if action == "BOT":
             self.comm_bot += commission
             self.avg_bot = (self.avg_bot * self.buys + price * quantity) // (self.buys + quantity)
             self.buys += quantity
-            self.total_bot = self.buys * self.avg_bot * self.symbol.big_point_value
+            self.total_bot = self.buys * self.avg_bot * self.bpv
             if self.action != "SLD":
-                self.avg_price = (self.total_bot + self.comm_bot) // self.buys // self.symbol.big_point_value
+                self.avg_price = (self.total_bot + self.comm_bot) // self.buys // self.bpv
             else:
-                self.realised_pnl += ((price * quantity - self.avg_sld * quantity) * self.symbol.big_point_value * 
+                self.realised_pnl += ((price * quantity - self.avg_sld * quantity) * self.bpv * 
                     sign(self.net) - int(quantity / self.sells * self.comm_sld + commission)
                 )
                 self.trade_pct = -1 * (self.avg_bot / float(self.avg_sld) - 1)
@@ -128,11 +126,11 @@ class Position(object):
             self.comm_sld += commission
             self.avg_sld = (self.avg_sld * self.sells + price * quantity) // (self.sells + quantity)
             self.sells += quantity
-            self.total_sld = self.sells * self.avg_sld * self.symbol.big_point_value
+            self.total_sld = self.sells * self.avg_sld * self.bpv
             if self.action != "BOT":
-                self.avg_price = (self.total_sld - self.comm_sld) // self.sells // self.symbol.big_point_value
+                self.avg_price = (self.total_sld - self.comm_sld) // self.sells // self.bpv
             else:
-                self.realised_pnl += ((price * quantity - self.avg_bot * quantity) * self.symbol.big_point_value *
+                self.realised_pnl += ((price * quantity - self.avg_bot * quantity) * self.bpv *
                     sign(self.net) - int(quantity / self.buys * self.comm_bot + commission)
                 )
                 self.trade_pct = self.avg_sld / float(self.avg_bot) - 1
@@ -145,13 +143,13 @@ class Position(object):
         self.net_incl_comm = self.net_total - self.total_commission
 
         # Adjust average price and cost basis
-        self.cost_basis = self.quantity * self.avg_price * self.symbol.big_point_value * sign(self.net)
+        self.cost_basis = self.quantity * self.avg_price * self.bpv * sign(self.net)
         
         
     def __str__(self):
         return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f" % \
-            (self.position_id, self.ticker, self.action, self.entry_date, self.exit_date, self.quantity, 
-             self.buys, self.sells, self.net,
+            (self.position_id, self.ticker, self.action, self.entry_date,
+             self.exit_date, self.quantity, self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
              PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
              PriceParser.display(self.comm_bot, 4), PriceParser.display(self.comm_sld, 4),

@@ -19,6 +19,8 @@ class Portfolio(object):
         self.positions = {}
         self.closed_positions = []
         self.realised_pnl = 0
+        self.open_quantity = 0
+        self.tickers_info = price_handler.tickers_info
 
     def _update_portfolio(self):
         """
@@ -28,7 +30,6 @@ class Portfolio(object):
         self.unrealised_pnl = 0
         self.equity = self.realised_pnl
         self.equity += self.init_cash
-
         for ticker in self.positions:
             pt = self.positions[ticker]
             if self.price_handler.istick():
@@ -40,10 +41,7 @@ class Portfolio(object):
             timestamp = self.price_handler.get_last_timestamp(ticker)
             pt.update_market_value(bid, ask, timestamp)
             self.unrealised_pnl += pt.unrealised_pnl
-            pnl_diff = pt.realised_pnl - pt.unrealised_pnl
-            self.equity += (
-                pt.market_value - pt.cost_basis + pnl_diff
-            )
+            self.equity += pt.market_value - pt.cost_basis
 
     def _add_position(
         self, action, ticker, quantity,
@@ -66,11 +64,13 @@ class Portfolio(object):
                 bid = close_price
                 ask = close_price
             
+            bpv = self.tickers_info[ticker].big_point_value
             position = Position(
                 action, ticker, quantity, price,
-                commission, bid, ask, entry_date
+                commission, bid, ask, entry_date, bpv
             )
             self.positions[ticker] = position
+            self.open_quantity = quantity
             self._update_portfolio()
         else:
             print(
@@ -91,6 +91,7 @@ class Portfolio(object):
         Once the Position is modified, the Portfolio values
         are updated.
         """
+        self.open_quantity = 0
         if ticker in self.positions:
             self.positions[ticker].transact_shares(
                 action, quantity, price, commission
@@ -105,9 +106,11 @@ class Portfolio(object):
             timestamp = self.price_handler.get_last_timestamp(ticker)
             self.positions[ticker].update_market_value(bid, ask, timestamp)
 
+            self.open_quantity += self.positions[ticker].quantity
             if self.positions[ticker].quantity == 0:
                 closed = self.positions.pop(ticker)
                 self.realised_pnl += closed.realised_pnl
+                self.cur_cash += closed.realised_pnl
                 self.closed_positions.append(closed)
 
             self._update_portfolio()
@@ -129,11 +132,16 @@ class Portfolio(object):
         Hence, this single method will be called by the
         PortfolioHandler to update the Portfolio itself.
         """
+        ticker_type = self.tickers_info[ticker].type
+        if ticker_type == 'FUT':
+            factor = self.tickers_info[ticker].margin
+        else:
+            factor = price
 
         if action == "BOT":
-            self.cur_cash -= ((quantity * price) + commission)
+            self.cur_cash -= (quantity * factor)
         elif action == "SLD":
-            self.cur_cash += ((quantity * price) - commission)
+            self.cur_cash += (quantity * factor)
 
         if ticker not in self.positions:
             self._add_position(
@@ -145,3 +153,16 @@ class Portfolio(object):
                 action, ticker, quantity,
                 price, commission
             )
+            
+    def get_position(self, ticker):
+        """
+        """
+        if ticker in self.positions:
+            pt = self.positions[ticker]
+            return pt
+        else:
+            print(
+                "Ticker %s not in the current position list. "
+                "Could not return current position." % ticker
+            )
+        

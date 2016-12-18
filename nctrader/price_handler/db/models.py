@@ -28,6 +28,7 @@ class Symbol(Base):
     big_point_value = Column(Integer)
     minimum_tick_size = Column(Float)
     tick_value = Column(Float)
+    margin = Column(Float)
 
     created_date = Column(DateTime, default=datetime.now)
     last_updated_date = Column(DateTime, default=datetime.now)
@@ -39,8 +40,16 @@ class Symbol(Base):
     tick_data = relationship("TickData", back_populates="symbols")
 
     def __repr__(self):
-        return ('<Symbol(id=%s exchange_id=%s data_vendor_id=%s ticker=%s type=%s created_date=%s last_updated_date=%s)>' % \
-                (self.id, self.exchange_id, self.data_vendor_id, self.ticker, self.type, self.created_date, self.last_updated_date)
+        return ("<Symbol(id=%s exchange_id=%s data_vendor_id=%s ticker=%s "
+                "exchange_ticker=%s name=%s type=%s sector=%s currency=%s "
+                "big_point_value=%s minimum_tick_size=%s tick_value=%s "
+                "margin=%s created_date=%s last_updated_date=%s)>" % (
+                    self.id, self.exchange_id, self.data_vendor_id, self.ticker,
+                    self.exchange_ticker, self.name, self.type, self.sector,
+                    self.currency, self.big_point_value, self.minimum_tick_size,
+                    self.tick_value, self.margin, self.created_date,
+                    self.last_updated_date
+                )
             )
 
 
@@ -57,11 +66,16 @@ class DataVendor(Base):
     created_date = Column(DateTime, default=datetime.now)
     last_updated_date = Column(DateTime, default=datetime.now)
 
-    symbols = relationship("Symbol", order_by=Symbol.id, back_populates="data_vendor")
+    symbols = relationship(
+        "Symbol", order_by=Symbol.id, back_populates="data_vendor"
+    )
     
     def __repr__(self):
-        return ('<DataVendor(id=%s name=%s website=%s support_email=%s created_date=%s last_updated_date=%s)>' % \
-                (self.id, self.name, self.website_url, self.support_email, self.created_date, self.last_updated_date)
+        return ('<DataVendor(id=%s name=%s website=%s support_email=%s '
+                'created_date=%s last_updated_date=%s)>' % (
+                    self.id, self.name, self.website_url, self.support_email,
+                    self.created_date, self.last_updated_date
+                )
             )
 
 
@@ -81,11 +95,18 @@ class Exchange(Base):
     created_date = Column(DateTime, default=datetime.now)
     last_updated_date = Column(DateTime, default=datetime.now)
 
-    symbols = relationship("Symbol", order_by=Symbol.id, back_populates="exchange")
+    symbols = relationship(
+        "Symbol", order_by=Symbol.id, back_populates="exchange"
+    )
     
     def __repr__(self):
-        return ('<Exchange(id=%s abbrev=%s name=%s city=%s country=%s currency=%s timezone_offset=%s created_date=%s last_updated_date=%s)>' % \
-                (self.id, self.abbrev, self.name, self.city, self.country, self.currency, self.timezone_offset, self.created_date, self.last_updated_date)
+        return ('<Exchange(id=%s abbrev=%s name=%s city=%s '
+                'country=%s currency=%s timezone_offset=%s '
+                'created_date=%s last_updated_date=%s)>' % (
+                    self.id, self.abbrev, self.name, self.city,
+                    self.country, self.currency, self.timezone_offset,
+                    self.created_date, self.last_updated_date
+                )
             )
 
 
@@ -107,11 +128,18 @@ class BarData(Base):
     created_date = Column(DateTime, default=datetime.now)
     last_updated_date = Column(DateTime, default=datetime.now)
 
-    symbols = relationship("Symbol", order_by=Symbol.id, back_populates="bar_data")
+    symbols = relationship(
+        "Symbol", order_by=Symbol.id, back_populates="bar_data"
+    )
 
     def __repr__(self):
-        return ('<BarData(symbol_id=%s bar_size=%s timestamp=%s open_price=%s high_price=%s low_price=%s close_price=%s created_date=%s last_updated_date=%s)>' % \
-                (self.symbol_id, self.barsize, self.timestamp, self.open_price, self.high_price, self.low_price, self.close_price, self.created_date, self.last_updated_date)
+        return ('<BarData(symbol_id=%s bar_size=%s timestamp=%s open_price=%s '
+                'high_price=%s low_price=%s close_price=%s created_date=%s '
+                'last_updated_date=%s)>' % (
+                    self.symbol_id, self.barsize, self.timestamp, 
+                    self.open_price, self.high_price, self.low_price, 
+                    self.close_price, self.created_date, self.last_updated_date
+                )
             )
 
         
@@ -128,9 +156,13 @@ class TickData(Base):
     created_date = Column(DateTime, default=datetime.now)
     last_updated_date = Column(DateTime, default=datetime.now)
 
-    symbols = relationship("Symbol", order_by=Symbol.id, back_populates="tick_data")
+    symbols = relationship(
+        "Symbol", order_by=Symbol.id, back_populates="tick_data")
 
     def __repr__(self):
-        return ('<TickData(symbol_id=%s timestamp=%s bid_price=%s ask_price=%s created_date=%s last_updated_date=%s)>' % \
-                (self.symbol_id, self.timestamp, self.bid_price, self.ask_price, self.created_date, self.last_updated_date)
+        return ('<TickData(symbol_id=%s timestamp=%s bid_price=%s ask_price=%s '
+                'created_date=%s last_updated_date=%s)>' % (
+                    self.symbol_id, self.timestamp, self.bid_price, 
+                    self.ask_price, self.created_date, self.last_updated_date
+                )
             )

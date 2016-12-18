@@ -25,3 +25,7 @@ class SuggestedOrder(object):
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
+
+    def __str__(self):
+        return "SuggestedOrder: ticker=%s action=%s quantity=%s" % \
+            (self.ticker, self.action, self.quantity)

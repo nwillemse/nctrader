@@ -66,12 +66,12 @@ class Backtest(object):
                     self.cur_time = event.time
                     self.strategy.on_tick(event)
                     self.portfolio_handler.update_portfolio_value()
-                    self.statistics.update(event.time)
+                    self.statistics.update(event)
                 if event.type == EventType.BAR:
                     self.cur_time = event.time
                     self.strategy.on_bar(event)
                     self.portfolio_handler.update_portfolio_value()
-                    self.statistics.update(event.time)
+                    self.statistics.update(event)
                 elif event.type == EventType.SIGNAL:
                     self.portfolio_handler.on_signal(event)
                 elif event.type == EventType.ORDER:
