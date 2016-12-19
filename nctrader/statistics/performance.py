@@ -92,6 +92,19 @@ def create_drawdowns(returns):
         drawdown.ix[t] = (hwm[t] - returns.ix[t]) / hwm[t]
         duration.ix[t] = (0 if drawdown.ix[t] == 0 else duration.ix[t - 1] + 1)
 
+    #TODO: Vectorize drawdown calculations to make them faster
+    """
+    dd =  1 - returns.div(returns.cummax())
+    dd_dur = dd.where(dd == 0, 1)
+    #print drawdown, dd
+    #print drawdown.max(), dd.max()
+    #print dd_dur.groupby(dd_dur).cumcount()
+    #print duration.max(), dd_dur.max()
+    dd.to_csv('~/dd.csv')
+    dd_dur.to_csv('~/dd_dir.csv')
+    a = dd_dur.groupby(dd_dur).cumcount()
+    """
+
     return drawdown, drawdown.max(), duration.max()
 
 

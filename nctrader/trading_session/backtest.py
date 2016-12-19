@@ -83,9 +83,6 @@ class Backtest(object):
         Simulates the backtest and outputs portfolio performance.
         """
         self._run_backtest()
-        results = self.statistics.get_results()
         print("---------------------------------")
         print("Backtest complete.")
-        if not testing:
-            self.statistics.save()
-        return results
+        self.statistics.save()
