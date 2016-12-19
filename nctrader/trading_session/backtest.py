@@ -12,9 +12,8 @@ class Backtest(object):
     carrying out an event-driven backtest.
     """
     def __init__(
-        self, price_handler, strategy, portfolio_handler,
-        execution_handler, position_sizer, risk_manager,
-        statistics, equity, start_date=None, end_date=None
+        self, price_handler, strategy, portfolio_handler, execution_handler,
+        position_sizer, risk_manager, statistics, equity, end_date=None
     ):
         """
         Set up the backtest variables according to
@@ -28,9 +27,7 @@ class Backtest(object):
         self.risk_manager = risk_manager
         self.statistics = statistics
         self.equity = equity
-        self.start_date, self.end_date = self._default_dates(
-            start_date, end_date
-        )
+        self.end_date = end_date
         self.events_queue = price_handler.events_queue
         self.cur_time = None
 
