@@ -59,7 +59,7 @@ class Backtest(object):
                 self.price_handler.stream_next()
             else:
                 if ((event.type == EventType.TICK or event.type == EventType.BAR)
-                    and (event.time < self.start_date or event.time > self.end_date)
+                    and event.time > self.end_date
                 ):
                     continue
                 if event.type == EventType.TICK:
