@@ -21,8 +21,8 @@ import csv
 class TearsheetStatistics(AbstractStatistics):
     """
     """
-    def __init__(self, config, portfolio_handler, title=None, benchmark=None,
-                 start_date=None, end_date=None
+    def __init__(self, config, portfolio_handler, title=None,
+                 benchmark=None, start_date=None, end_date=None
     ):
         """
         Takes in the config, a portfolio handler, optional title
@@ -66,9 +66,6 @@ class TearsheetStatistics(AbstractStatistics):
             self.current_line['contracts'] = (
                 self.portfolio_handler.portfolio.open_quantity
             )
-            #self.current_line['cur_cash'] = PriceParser.display(
-            #    self.portfolio_handler.portfolio.cur_cash
-            #)
 
         self.current_timestamp = event.time
 
@@ -381,8 +378,9 @@ class TearsheetStatistics(AbstractStatistics):
         avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
         max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
         max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
-        max_loss_dt = ''  # pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
-        avg_dit = '0.0'  # = '{:.2f}'.format(np.mean(pos.time_in_pos))
+        max_loss_dt = pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
+        max_loss_dt = pd.to_datetime(str(max_loss_dt)).strftime('%Y-%m-%d')
+        avg_dit = '{:.2f}'.format(np.mean(pos.time_in_pos))
 
         ax.text(0.5, 8.9, 'Trade Winning %', fontsize=8)
         ax.text(9.5, 8.9, win_pct_str, fontsize=8, fontweight='bold', horizontalalignment='right')
@@ -564,7 +562,7 @@ class TearsheetStatistics(AbstractStatistics):
 
 
     def save(self, filename=""):
-        now = datetime.utcnow()
+        now = datetime.now()
 
         # Save tearsheet figure
         filename = "tearsheet_" + now.strftime("%Y-%m-%d") + ".png"

@@ -46,8 +46,10 @@ class Position(object):
         self.total_commission = 0
         
         self.entry_date = entry_date
+        self.cur_timestamp = entry_date
         self.exit_date = None
         self.trade_pct = 0.0
+        self.time_in_pos = 0
         
         self._calculate_initial_value()
         self.update_market_value(bid, ask, entry_date)
@@ -95,6 +97,9 @@ class Position(object):
         self.market_value = self.quantity * midpoint * sign(self.net) * self.bpv
         self.unrealised_pnl = (self.market_value - self.cost_basis)
         self.exit_date = timestamp
+        if self.cur_timestamp <> timestamp:
+            self.time_in_pos += 1
+            self.cur_timestamp = timestamp
 
     def transact_shares(self, action, quantity, price, commission):
         """
@@ -147,7 +152,7 @@ class Position(object):
         
         
     def __str__(self):
-        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f" % \
+        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f time_in_pos=%s" % \
             (self.position_id, self.ticker, self.action, self.entry_date,
              self.exit_date, self.quantity, self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
@@ -156,7 +161,7 @@ class Position(object):
              PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
              PriceParser.display(self.cost_basis, 4), PriceParser.display(self.market_value, 4),
              PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl),
-             self.trade_pct
+             self.trade_pct, self.time_in_pos
             )
 
     def __dict__(self):
@@ -183,4 +188,5 @@ class Position(object):
         od['unrealised_pnl'] = PriceParser.display(self.unrealised_pnl)
         od['realised_pnl'] = PriceParser.display(self.realised_pnl)
         od['trade_pct'] = self.trade_pct
+        od['time_in_pos'] = self.time_in_pos
         return od

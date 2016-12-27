@@ -155,7 +155,7 @@ class SignalEvent(Event):
     Handles the event of sending a Signal from a Strategy object.
     This is received by a Portfolio object and acted upon.
     """
-    def __init__(self, ticker, action):
+    def __init__(self, ticker, action, fraction=0.0):
         """
         Initialises the SignalEvent.
 
@@ -164,15 +164,17 @@ class SignalEvent(Event):
         action - 'BOT'  go long
                  'SLD'  go short
                  'EXIT' close the trade out completely
+        fraction - % of equity to use for position sizing (optional)
         """
         self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
+        self.fraction = fraction
         self.priority = 200
 
     def __str__(self):
-        return "%s ticker:%s action:%s" % (
-            str(self.type), str(self.ticker), str(self.action)
+        return "%s ticker:%s action:%s fraction:%.2f%%" % (
+            str(self.type), str(self.ticker), str(self.action), self.fraction
         )
 
     def __cmp__(self, other):

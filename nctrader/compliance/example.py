@@ -23,7 +23,7 @@ class ExampleCompliance(AbstractCompliance):
         """
         self.config = config
         # Remove the previous CSV file
-        today = datetime.datetime.utcnow().date()
+        today = datetime.datetime.now().date()
         self.csv_filename = "tradelog_" + today.strftime("%Y-%m-%d") + ".csv"
 
         try:
@@ -34,10 +34,8 @@ class ExampleCompliance(AbstractCompliance):
 
         # Write new file header
         fieldnames = [
-            "timestamp", "ticker",
-            "action", "quantity",
-            "exchange", "price",
-            "commission"
+            "timestamp", "ticker", "action", "quantity",
+            "exchange", "price", "commission"
         ]
         fname = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, self.csv_filename))
         with open(fname, 'a') as csvfile:

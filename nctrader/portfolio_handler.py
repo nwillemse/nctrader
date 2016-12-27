@@ -40,19 +40,21 @@ class PortfolioHandler(object):
         At this stage they are simply "suggestions" that the
         RiskManager will either verify, modify or eliminate.
         """
+        order = None
         if signal_event.action == 'XIT':
             # current position
             pos = self.portfolio.get_position(signal_event.ticker)
-            if pos.action == 'BOT':
-                action = 'SLD'
-            else:
-                action = 'BOT'
-            order = SuggestedOrder(
-                signal_event.ticker, action, abs(pos.net)
-            )
+            if pos <> None:
+                if pos.action == 'BOT':
+                    action = 'SLD'
+                else:
+                    action = 'BOT'
+                order = SuggestedOrder(
+                    signal_event.ticker, action, abs(pos.net), signal_event.fraction
+                )
         else:
             order = SuggestedOrder(
-                signal_event.ticker, signal_event.action
+                signal_event.ticker, signal_event.action, 0, signal_event.fraction
             )
 
         return order
