@@ -50,11 +50,13 @@ class PortfolioHandler(object):
                 else:
                     action = 'BOT'
                 order = SuggestedOrder(
-                    signal_event.ticker, action, abs(pos.net), signal_event.fraction
+                    signal_event.ticker, action, abs(pos.net),
+                    signal_event.fraction, signal_event.name
                 )
         else:
             order = SuggestedOrder(
-                signal_event.ticker, signal_event.action, 0, signal_event.fraction
+                signal_event.ticker, signal_event.action, 0,
+                signal_event.fraction, signal_event.name
             )
 
         return order
@@ -86,10 +88,11 @@ class PortfolioHandler(object):
         price = fill_event.price
         commission = fill_event.commission
         timestamp = fill_event.timestamp
+        name = fill_event.name
         # Create or modify the position from the fill info
         self.portfolio.transact_position(
-            action, ticker, quantity,
-            price, commission, timestamp
+            action, ticker, quantity, price,
+            commission, timestamp, name
         )
 
     def on_signal(self, signal_event):

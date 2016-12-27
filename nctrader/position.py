@@ -13,8 +13,8 @@ class Position(object):
 
     def __init__(
         self, action, ticker, init_quantity,
-        init_price, init_commission,
-        bid, ask, entry_date, bpv=1
+        init_price, init_commission, bid, ask, entry_date,
+        bpv=1, entry_name=None
     ):
         """
         Set up the initial "account" of the Position to be
@@ -31,6 +31,8 @@ class Position(object):
         self.init_price = init_price
         self.init_commission = init_commission
         self.bpv = bpv
+        self.entry_name = entry_name
+        self.exit_name = None
 
         self.realised_pnl = 0
         self.unrealised_pnl = 0
@@ -101,7 +103,7 @@ class Position(object):
             self.time_in_pos += 1
             self.cur_timestamp = timestamp
 
-    def transact_shares(self, action, quantity, price, commission):
+    def transact_shares(self, action, quantity, price, commission, name):
         """
         Calculates the adjustments to the Position that occur
         once new shares are bought and sold.
@@ -124,6 +126,7 @@ class Position(object):
                     sign(self.net) - int(quantity / self.sells * self.comm_sld + commission)
                 )
                 self.trade_pct = -1 * (self.avg_bot / float(self.avg_sld) - 1)
+                self.exit_name = name
                 
 
         # action == "SLD"
@@ -139,6 +142,7 @@ class Position(object):
                     sign(self.net) - int(quantity / self.buys * self.comm_bot + commission)
                 )
                 self.trade_pct = self.avg_sld / float(self.avg_bot) - 1
+                self.exit_name = name
 
         # Adjust net values, including commissions
         self.net = self.buys - self.sells
@@ -152,7 +156,7 @@ class Position(object):
         
         
     def __str__(self):
-        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f time_in_pos=%s" % \
+        return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f time_in_pos=%s entry_name=%s exit_name=%s" % \
             (self.position_id, self.ticker, self.action, self.entry_date,
              self.exit_date, self.quantity, self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
@@ -161,7 +165,7 @@ class Position(object):
              PriceParser.display(self.total_commission, 4), PriceParser.display(self.avg_price, 4),
              PriceParser.display(self.cost_basis, 4), PriceParser.display(self.market_value, 4),
              PriceParser.display(self.realised_pnl), PriceParser.display(self.unrealised_pnl),
-             self.trade_pct, self.time_in_pos
+             self.trade_pct, self.time_in_pos, self.entry_name, self.exit_name
             )
 
     def __dict__(self):
@@ -169,13 +173,15 @@ class Position(object):
         od['position_id'] = self.position_id
         od['ticker'] = self.ticker
         od['action'] = self.action
-        od['quantity'] = self.quantity
+        #od['quantity'] = self.quantity
         od['buys'] = self.buys
         od['sells'] = self.sells
         od['entry_date'] = self.entry_date
         od['exit_date'] = self.exit_date
+        od['entry_name'] = self.entry_name
+        od['exit_name'] = self.exit_name
         od['avg_price'] = PriceParser.display(self.avg_price, 5)
-        od['net'] = PriceParser.display(self.net, 5)
+        #od['net'] = PriceParser.display(self.net, 5)
         od['net_incl_comm'] = PriceParser.display(self.net_incl_comm, 5)
         od['net_total'] = PriceParser.display(self.net_total, 5)
         od['avg_bot'] = PriceParser.display(self.avg_bot, 5)

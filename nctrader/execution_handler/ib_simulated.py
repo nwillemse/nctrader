@@ -49,6 +49,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
             ticker = event.ticker
             action = event.action
             quantity = event.quantity
+            name = event.name
 
             # Obtain the fill price
             if self.price_handler.istick():
@@ -70,7 +71,7 @@ class IBSimulatedExecutionHandler(AbstractExecutionHandler):
                 timestamp, ticker,
                 action, quantity,
                 exchange, fill_price,
-                commission
+                commission, name
             )
             self.events_queue.put(fill_event)
 

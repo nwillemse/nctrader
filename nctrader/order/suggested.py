@@ -7,7 +7,7 @@ class SuggestedOrder(object):
     that a suggested order is never transacted unless it has been
     scrutinised by the position sizing and risk management layers.
     """
-    def __init__(self, ticker, action, quantity=0, fraction=0.0):
+    def __init__(self, ticker, action, quantity=0, fraction=0.0, name=None):
         """
         Initialises the SuggestedOrder. The quantity defaults
         to zero as the PortfolioHandler creates these objects
@@ -21,12 +21,14 @@ class SuggestedOrder(object):
         ticker - The ticker symbol, e.g. 'GOOG'.
         action - 'BOT' (for long) or 'SLD' (for short).
         quantity - The quantity of shares to transact.
+        name - entry or exit name for the position
         """
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
         self.fraction = fraction
+        self.name = name
 
     def __str__(self):
-        return "SuggestedOrder: ticker=%s action=%s quantity=%s fraction=%.2f%%" % \
-            (self.ticker, self.action, self.quantity, self.fraction)
+        return "SuggestedOrder: ticker=%s action=%s quantity=%s fraction=%.2f%% name=%s" % \
+            (self.ticker, self.action, self.quantity, self.fraction, self.name)

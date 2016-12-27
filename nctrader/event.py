@@ -155,7 +155,7 @@ class SignalEvent(Event):
     Handles the event of sending a Signal from a Strategy object.
     This is received by a Portfolio object and acted upon.
     """
-    def __init__(self, ticker, action, fraction=0.0):
+    def __init__(self, ticker, action, fraction=0.0, name=None):
         """
         Initialises the SignalEvent.
 
@@ -165,16 +165,19 @@ class SignalEvent(Event):
                  'SLD'  go short
                  'EXIT' close the trade out completely
         fraction - % of equity to use for position sizing (optional)
+        name - entry or exit name to tie the position to
         """
         self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
         self.fraction = fraction
+        self.name = name
         self.priority = 200
 
     def __str__(self):
-        return "%s ticker:%s action:%s fraction:%.2f%%" % (
-            str(self.type), str(self.ticker), str(self.action), self.fraction
+        return "%s ticker:%s action:%s fraction:%.2f%% name:%s" % (
+            str(self.type), str(self.ticker), str(self.action),
+            self.fraction, self.name
         )
 
     def __cmp__(self, other):
@@ -187,7 +190,7 @@ class OrderEvent(Event):
     The order contains a ticker (e.g. GOOG), action (BOT or SLD)
     and quantity.
     """
-    def __init__(self, ticker, action, quantity):
+    def __init__(self, ticker, action, quantity, name=None):
         """
         Initialises the OrderEvent.
 
@@ -195,11 +198,13 @@ class OrderEvent(Event):
         ticker - The ticker symbol, e.g. 'GOOG'.
         action - 'BOT' (for long) or 'SLD' (for short).
         quantity - The quantity of shares to transact.
+        name - entry or exit name to tie to position
         """
         self.type = EventType.ORDER
         self.ticker = ticker
         self.action = action
         self.quantity = quantity
+        self.name = name
         self.priority = 300
 
     def print_order(self):
@@ -207,15 +212,14 @@ class OrderEvent(Event):
         Outputs the values within the OrderEvent.
         """
         print(
-            "Order: Ticker=%s, Action=%s, Quantity=%s" % (
-                self.ticker, self.action, self.quantity
+            "Order: Ticker=%s, Action=%s, Quantity=%s Name=%s" % (
+                self.ticker, self.action, self.quantity, self.name
             )
         )
 
     def __str__(self):
-        return "%s ticker:%s action:%s quantity:%s" % (
-            str(self.type), str(self.ticker),
-            str(self.action), str(self.quantity)
+        return "%s ticker:%s action:%s quantity:%s name=%s" % (
+            self.type, self.ticker, self.action, self.quantity, self.name
         )
 
     def __cmp__(self, other):
@@ -238,7 +242,7 @@ class FillEvent(Event):
         self, timestamp, ticker,
         action, quantity,
         exchange, price,
-        commission
+        commission, name
     ):
         """
         Initialises the FillEvent object.
@@ -250,6 +254,7 @@ class FillEvent(Event):
         exchange - The exchange where the order was filled.
         price - The price at which the trade was filled
         commission - The brokerage commission for carrying out the trade.
+        name - entry or exit name for the position
         """
         self.type = EventType.FILL
         self.timestamp = timestamp
@@ -259,13 +264,14 @@ class FillEvent(Event):
         self.exchange = exchange
         self.price = price
         self.commission = commission
+        self.name = name
         self.priority = 400
 
     def __str__(self):
-        return "%s ticker:%s timestamp:%s action:%s quantity:%s exchange:%s price:%s commission:%s" % (
+        return "%s ticker:%s timestamp:%s action:%s quantity:%s exchange:%s price:%s commission:%s name:%s" % (
             str(self.type), str(self.ticker), str(self.timestamp),
             str(self.action), str(self.quantity), str(self.action),
-            str(self.price), str(self.commission)
+            str(self.price), str(self.commission), self.name
         )
 
     def __cmp__(self, other):

@@ -45,7 +45,7 @@ class Portfolio(object):
 
     def _add_position(
         self, action, ticker, quantity,
-        price, commission, entry_date
+        price, commission, entry_date, entry_name
     ):
         """
         Adds a new Position object to the Portfolio. This
@@ -66,8 +66,8 @@ class Portfolio(object):
             
             bpv = self.tickers_info[ticker].big_point_value
             position = Position(
-                action, ticker, quantity, price,
-                commission, bid, ask, entry_date, bpv
+                action, ticker, quantity, price, commission,
+                bid, ask, entry_date, bpv, entry_name
             )
             self.positions[ticker] = position
             self.open_quantity = quantity
@@ -80,7 +80,7 @@ class Portfolio(object):
 
     def _modify_position(
         self, action, ticker,
-        quantity, price, commission
+        quantity, price, commission, name
     ):
         """
         Modifies a current Position object to the Portfolio.
@@ -94,7 +94,7 @@ class Portfolio(object):
         self.open_quantity = 0
         if ticker in self.positions:
             self.positions[ticker].transact_shares(
-                action, quantity, price, commission
+                action, quantity, price, commission, name
             )
             if self.price_handler.istick():
                 bid, ask = self.price_handler.get_best_bid_ask(ticker)
@@ -121,8 +121,8 @@ class Portfolio(object):
             )
 
     def transact_position(
-        self, action, ticker, quantity,
-        price, commission, timestamp
+        self, action, ticker, quantity, price,
+        commission, timestamp, name
     ):
         """
         Handles any new position or modification to
@@ -145,13 +145,11 @@ class Portfolio(object):
 
         if ticker not in self.positions:
             self._add_position(
-                action, ticker, quantity,
-                price, commission, timestamp
+                action, ticker, quantity, price, commission, timestamp, name
             )
         else:
             self._modify_position(
-                action, ticker, quantity,
-                price, commission
+                action, ticker, quantity, price, commission, name
             )
             
     def get_position(self, ticker):
