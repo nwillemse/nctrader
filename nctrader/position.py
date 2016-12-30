@@ -24,7 +24,7 @@ class Position(object):
         Then calculate the initial values and finally update the
         market value of the transaction.
         """
-        self.position_id = Position.newid()
+        self.id = Position.newid()
         self.action = action
         self.ticker = ticker
         self.quantity = init_quantity
@@ -157,7 +157,7 @@ class Position(object):
         
     def __str__(self):
         return "Position[%s]: ticker=%s action=%s entry_date=%s exit_date=%s quantity=%s buys=%s sells=%s net=%s avg_bot=%0.4f avg_sld=%0.4f total_bot=%0.2f total_sld=%0.2f comm_bot=%0.2f comm_sld=%0.2f total_commission=%0.4f avg_price=%0.4f cost_basis=%0.4f market_value=%0.4f realised_pnl=%0.2f unrealised_pnl=%0.2f trade_pct=%0.2f time_in_pos=%s entry_name=%s exit_name=%s" % \
-            (self.position_id, self.ticker, self.action, self.entry_date,
+            (self.id, self.ticker, self.action, self.entry_date,
              self.exit_date, self.quantity, self.buys, self.sells, self.net,
              PriceParser.display(self.avg_bot, 4), PriceParser.display(self.avg_sld, 4),
              PriceParser.display(self.total_bot), PriceParser.display(self.total_sld),
@@ -170,7 +170,7 @@ class Position(object):
 
     def __dict__(self):
         od = OrderedDict()
-        od['position_id'] = self.position_id
+        od['id'] = self.id
         od['ticker'] = self.ticker
         od['action'] = self.action
         #od['quantity'] = self.quantity
