@@ -9,7 +9,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-db = 'sqlite:////home/nwillemse/Dropbox/DATA/securities_master.db'
+#TODO: this needs to be in the configuration file instead of here...
+db = 'sqlite:////Users/nwillemse/Dropbox/DATA/securities_master.db'
 
 engine = create_engine(db, convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
