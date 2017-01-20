@@ -122,8 +122,14 @@ class TearsheetStatistics(AbstractStatistics):
         Retrieve the list of closed Positions objects from the portfolio
         and reformat into a pandas dataframe to be returned
         """
-        pos = self.portfolio_handler.portfolio.closed_positions
         a = []
+        pos = self.portfolio_handler.portfolio.closed_positions
+        for p in pos:
+            d = p.__dict__()
+            a.append(d)
+
+        # append open positions at the end
+        pos = self.portfolio_handler.portfolio.get_open_positions()
         for p in pos:
             d = p.__dict__()
             a.append(d)

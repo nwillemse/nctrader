@@ -163,4 +163,12 @@ class Portfolio(object):
                 "Ticker %s not in the current position list. "
                 "Could not return current position." % ticker
             )
-        
+
+    def get_open_positions(self):
+        """
+        Returns a list with all the open positions
+        """
+        open_pos= []
+        for ticker, pos in self.positions.iteritems():
+            open_pos.append(pos)
+        return open_pos
