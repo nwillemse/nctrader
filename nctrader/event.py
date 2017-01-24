@@ -155,7 +155,9 @@ class SignalEvent(Event):
     Handles the event of sending a Signal from a Strategy object.
     This is received by a Portfolio object and acted upon.
     """
-    def __init__(self, ticker, action, fraction=0.0, name=None):
+    def __init__(
+            self, ticker, action, fraction=0.0, name=None, unit=1
+    ):
         """
         Initialises the SignalEvent.
 
@@ -166,18 +168,21 @@ class SignalEvent(Event):
                  'EXIT' close the trade out completely
         fraction - % of equity to use for position sizing (optional)
         name - entry or exit name to tie the position to
+        unit - the unit number when scaling into position, i.e 1, 2, or 3.
+               This is used during position sizing.
         """
         self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
         self.fraction = fraction
         self.name = name
+        self.unit = unit
         self.priority = 200
 
     def __str__(self):
-        return "%s ticker:%s action:%s fraction:%.2f%% name:%s" % (
+        return "%s ticker:%s action:%s fraction:%.2f%% name:%s unit:%s" % (
             str(self.type), str(self.ticker), str(self.action),
-            self.fraction, self.name
+            self.fraction, self.name, self.unit
         )
 
     def __cmp__(self, other):

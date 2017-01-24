@@ -51,12 +51,12 @@ class PortfolioHandler(object):
                     action = 'BOT'
                 order = SuggestedOrder(
                     signal_event.ticker, action, abs(pos.net),
-                    signal_event.fraction, signal_event.name
+                    signal_event.fraction, signal_event.name, signal_event.unit
                 )
         else:
             order = SuggestedOrder(
                 signal_event.ticker, signal_event.action, 0,
-                signal_event.fraction, signal_event.name
+                signal_event.fraction, signal_event.name, signal_event.unit
             )
 
         return order
