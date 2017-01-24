@@ -15,17 +15,17 @@ class FractionalPositionSizer(AbstractPositionSizer):
 
     def _unit_shares(self, tot_shares, unit):
         """
+        Calculates the number of shares for the next unit.  Based on
+        the total shares for the position and the number of units
+        taken per position.
         """
-        spu = []
-        ttl = 0
-        for i in range(1, self.units_per_position):
-            spu_tmp = int(np.ceil((tot_shares - ttl) / float(self.units_per_position)))
-            spu.append(spu_tmp)
-            ttl += spu_tmp
-        # now append the last share unit
-        spu.append(int(max(tot_shares - ttl,0)))
-        spu.sort(reverse=True)
-        return spu[unit-1]
+        result = []
+        for i in range(self.units_per_position):
+            result.append(tot_shares / self.units_per_position)
+        remaining = tot_shares % self.units_per_position
+        for i in range(remaining):
+            result[i] += 1
+        return result[unit-1]
 
 
     def size_order(self, portfolio, initial_order):

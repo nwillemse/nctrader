@@ -1,9 +1,8 @@
 import pandas as pd
 
-from sqlalchemy import create_engine
 from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
-from .db import db_session
+from .db import db_session, init_engine
 from .db.models import Symbol
 from ..event import BarEvent
 
@@ -15,15 +14,19 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
     requested financial instrument and stream those to the provided
     events queue as BarEvents.
     """
-    def __init__(self, sqlite_db, events_queue, init_tickers=None):
+    def __init__(self, sqlite_db, events_queue, 
+                 init_tickers=None, data_vendor='CSI'
+    ):
         """
         Takes path to sqlite database, the events queue and a possible
         list of initial ticker symbols then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
         self.sqlite_db = sqlite_db
-        self.engine = create_engine(sqlite_db)
         self.events_queue = events_queue
+        self.data_vendor = data_vendor
+
+        self.engine = init_engine(sqlite_db)
         self.continue_backtest = True
         self.tickers = {}
         self.tickers_data = {}
@@ -45,14 +48,17 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
                       d.low_price AS Low,
                       d.close_price AS Close,
                       d.volume AS Volume
-                 FROM bar_data d,
-                      symbol s
+                 FROM bar_data    d,
+                      symbol      s,
+                      data_vendor dv
                 WHERE s.id = d.symbol_id
+                  AND dv.id = s.data_vendor_id
                   AND s.ticker = '%s'
                   AND d.bar_size = 'D'
+                  AND dv.name = '%s'
         """
         self.tickers_data[ticker] = pd.read_sql_query(
-            qry % ticker, self.engine, index_col='Date', parse_dates=['Date']
+            qry % (ticker, self.data_vendor), self.engine, index_col='Date', parse_dates=['Date']
         )
         self.tickers_data[ticker]["Ticker"] = ticker
 
