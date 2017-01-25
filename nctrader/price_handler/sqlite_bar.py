@@ -3,7 +3,7 @@ import pandas as pd
 from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
 from .db import db_session, init_engine
-from .db.models import Symbol
+from .db.models import Symbol, DataVendor
 from ..event import BarEvent
 
 
@@ -24,9 +24,10 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         """
         self.sqlite_db = sqlite_db
         self.events_queue = events_queue
-        self.data_vendor = data_vendor
-
         self.engine = init_engine(sqlite_db)
+        self.data_vendor = db_session.query(DataVendor).\
+                                filter(DataVendor.name == data_vendor).\
+                                first()
         self.continue_backtest = True
         self.tickers = {}
         self.tickers_data = {}
@@ -58,7 +59,8 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
                   AND dv.name = '%s'
         """
         self.tickers_data[ticker] = pd.read_sql_query(
-            qry % (ticker, self.data_vendor), self.engine, index_col='Date', parse_dates=['Date']
+            qry % (ticker, self.data_vendor.name), self.engine,
+                   index_col='Date', parse_dates=['Date']
         )
         self.tickers_data[ticker]["Ticker"] = ticker
 
@@ -68,8 +70,10 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         containing all the additional information including big_point_value,
         tick_size, margin
         """
-        symbol_info = db_session.query(Symbol).filter(
-            Symbol.ticker == ticker).one()
+        symbol_info = db_session.query(Symbol).\
+                            filter(Symbol.ticker == ticker).\
+                            filter(Symbol.data_vendor == self.data_vendor).\
+                            one()
         symbol_info.margin = PriceParser.parse(symbol_info.margin)
         return symbol_info
 
