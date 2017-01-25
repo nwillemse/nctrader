@@ -136,7 +136,7 @@ class BarData(Base):
         return ('<BarData(symbol_id=%s bar_size=%s timestamp=%s open_price=%s '
                 'high_price=%s low_price=%s close_price=%s created_date=%s '
                 'last_updated_date=%s)>' % (
-                    self.symbol_id, self.barsize, self.timestamp, 
+                    self.symbol_id, self.bar_size, self.timestamp, 
                     self.open_price, self.high_price, self.low_price, 
                     self.close_price, self.created_date, self.last_updated_date
                 )
