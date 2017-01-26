@@ -14,8 +14,8 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
     requested financial instrument and stream those to the provided
     events queue as BarEvents.
     """
-    def __init__(self, sqlite_db, events_queue, 
-                 init_tickers=None, data_vendor='CSI'
+    def __init__(self, sqlite_db, events_queue, init_tickers=None,
+                 data_vendor='CSI', bar_size='D'
     ):
         """
         Takes path to sqlite database, the events queue and a possible
@@ -24,6 +24,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         """
         self.sqlite_db = sqlite_db
         self.events_queue = events_queue
+        self.bar_size = bar_size
         self.engine = init_engine(sqlite_db)
         self.data_vendor = db_session.query(DataVendor).\
                                 filter(DataVendor.name == data_vendor).\
@@ -55,12 +56,12 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
                 WHERE s.id = d.symbol_id
                   AND dv.id = s.data_vendor_id
                   AND s.ticker = '%s'
-                  AND d.bar_size = 'D'
+                  AND d.bar_size = '%s'
                   AND dv.name = '%s'
         """
+        sql_qry = qry % (ticker, self.bar_size, self.data_vendor.name)
         self.tickers_data[ticker] = pd.read_sql_query(
-            qry % (ticker, self.data_vendor.name), self.engine,
-                   index_col='Date', parse_dates=['Date']
+            sql_qry, self.engine, index_col='Date', parse_dates=['Date']
         )
         self.tickers_data[ticker]["Ticker"] = ticker
 
@@ -156,7 +157,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
             return
         # Obtain all elements of the bar from the dataframe
         ticker = row["Ticker"]
-        period = 86400  # Seconds in a day
+        period = self._period_map[self.bar_size]
         # Create the tick event for the queue
         bev = self._create_event(index, period, ticker, row)
         # Store event

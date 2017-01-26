@@ -80,6 +80,8 @@ class AbstractTickPriceHandler(AbstractPriceHandler):
 
 
 class AbstractBarPriceHandler(AbstractPriceHandler):
+    _period_map = {'D': 60*60*24, '1M': 60, '15M': 60*15}
+
     def istick(self):
         return False
 
