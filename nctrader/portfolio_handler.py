@@ -41,6 +41,11 @@ class PortfolioHandler(object):
         RiskManager will either verify, modify or eliminate.
         """
         order = None
+        if signal_event.suggested_quantity is None:
+            quantity = 0
+        else:
+            quantity = signal_event.suggested_quantity
+
         if signal_event.action == 'XIT':
             # current position
             pos = self.portfolio.get_position(signal_event.ticker)
@@ -55,7 +60,7 @@ class PortfolioHandler(object):
                 )
         else:
             order = SuggestedOrder(
-                signal_event.ticker, signal_event.action, 0,
+                signal_event.ticker, signal_event.action, quantity,
                 signal_event.fraction, signal_event.name, signal_event.unit
             )
 

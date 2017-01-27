@@ -156,7 +156,8 @@ class SignalEvent(Event):
     This is received by a Portfolio object and acted upon.
     """
     def __init__(
-            self, ticker, action, fraction=0.0, name=None, unit=1
+            self, ticker, action, suggested_quantity=None,
+            fraction=0.0, name=None, unit=1
     ):
         """
         Initialises the SignalEvent.
@@ -166,6 +167,10 @@ class SignalEvent(Event):
         action - 'BOT'  go long
                  'SLD'  go short
                  'EXIT' close the trade out completely
+        suggested_quantity - Optional positively valued integer
+            representing a suggested absolute quantity of units
+            of an asset to transact in, which is used by the
+            PositionSizer and RiskManager.
         fraction - % of equity to use for position sizing (optional)
         name - entry or exit name to tie the position to
         unit - the unit number when scaling into position, i.e 1, 2, or 3.
@@ -174,14 +179,15 @@ class SignalEvent(Event):
         self.type = EventType.SIGNAL
         self.ticker = ticker
         self.action = action
+        self.suggested_quantity = suggested_quantity
         self.fraction = fraction
         self.name = name
         self.unit = unit
         self.priority = 200
 
     def __str__(self):
-        return "%s ticker:%s action:%s fraction:%.2f%% name:%s unit:%s" % (
-            str(self.type), str(self.ticker), str(self.action),
+        return "%s ticker:%s action:%s quantity:%s fraction:%.2f%% name:%s unit:%s" % (
+            self.type, self.ticker, self.action, self.suggested_quantity,
             self.fraction, self.name, self.unit
         )
 
