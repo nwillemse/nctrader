@@ -9,7 +9,7 @@ from .price_parser import PriceParser
 
 class Position(object):
 
-    newid = itertools.count(start=1).next
+    newid = next(itertools.count(start=1))
 
     def __init__(
         self, action, ticker, init_quantity,
@@ -24,7 +24,7 @@ class Position(object):
         Then calculate the initial values and finally update the
         market value of the transaction.
         """
-        self.id = Position.newid()
+        self.id = Position.newid
         self.action = action
         self.ticker = ticker
         self.quantity = init_quantity
@@ -99,7 +99,7 @@ class Position(object):
         self.market_value = self.quantity * midpoint * sign(self.net) * self.bpv
         self.unrealised_pnl = (self.market_value - self.cost_basis)
         self.exit_date = timestamp
-        if self.cur_timestamp <> timestamp:
+        if self.cur_timestamp != timestamp:
             self.time_in_pos += 1
             self.cur_timestamp = timestamp
 

@@ -52,7 +52,7 @@ class TearsheetStatistics(AbstractStatistics):
             self.current_timestamp = event.time
             return
 
-        if event.time <> self.current_timestamp and len(self.current_line) > 0:
+        if event.time != self.current_timestamp and len(self.current_line) > 0:
             self.equity_file.append(self.current_line.copy())
             self.current_line.clear()
         else:
@@ -377,16 +377,26 @@ class TearsheetStatistics(AbstractStatistics):
         ax.yaxis.set_major_formatter(FuncFormatter(y_axis_formatter))
 
         num_trades = pos.shape[0]
-        win_pct = pos[pos["trade_pct"] > 0].shape[0] / float(num_trades)
-        win_pct_str = '{:.0%}'.format(win_pct)
-        avg_trd_pct = '{:.2%}'.format(np.mean(pos["trade_pct"]))
-        avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] > 0]["trade_pct"]))
-        avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
-        max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
-        max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
-        max_loss_dt = pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
-        max_loss_dt = pd.to_datetime(str(max_loss_dt)).strftime('%Y-%m-%d')
-        avg_dit = '{:.2f}'.format(np.mean(pos.time_in_pos))
+        if num_trades == 0:
+            win_pct_str = '{:.0%}'.format(0.0)
+            avg_trd_pct = '{:.2%}'.format(0.0)
+            avg_win_pct = '{:.2%}'.format(0.0)
+            avg_loss_pct = '{:.2%}'.format(0.0)
+            max_win_pct = '{:.2%}'.format(0.0)
+            max_loss_pct = '{:.2%}'.format(0.0)
+            max_loss_dt = None #pd.to_datetime(str(max_loss_dt)).strftime('%Y-%m-%d')
+            avg_dit = '{:.2f}'.format(0.0)
+        else:
+            win_pct = pos[pos["trade_pct"] > 0].shape[0] / float(num_trades)
+            win_pct_str = '{:.0%}'.format(win_pct)
+            avg_trd_pct = '{:.2%}'.format(np.mean(pos["trade_pct"]))
+            avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] > 0]["trade_pct"]))
+            avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
+            max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
+            max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
+            max_loss_dt = pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
+            max_loss_dt = pd.to_datetime(str(max_loss_dt)).strftime('%Y-%m-%d')
+            avg_dit = '{:.2f}'.format(np.mean(pos.time_in_pos))
 
         ax.text(0.5, 8.9, 'Trade Winning %', fontsize=8)
         ax.text(9.5, 8.9, win_pct_str, fontsize=8, fontweight='bold', horizontalalignment='right')
@@ -579,11 +589,12 @@ class TearsheetStatistics(AbstractStatistics):
         filename = "positions_" + now.strftime("%Y-%m-%d") + ".csv"
         filename = os.path.expanduser(os.path.join(self.config.OUTPUT_DIR, filename))
         pos = self._get_positions()
-        keys = pos[0].keys()
-        with open(filename, 'wb') as output_file:
-            dict_writer = csv.DictWriter(output_file, keys)
-            dict_writer.writeheader()
-            dict_writer.writerows(pos)
+        if len(pos) > 0:
+            keys = pos[0].keys()
+            with open(filename, 'w') as output_file:
+                dict_writer = csv.DictWriter(output_file, keys)
+                dict_writer.writeheader()
+                dict_writer.writerows(pos)
 
         # Save the equity stats
         filename = "equity_" + now.strftime("%Y-%m-%d") + ".csv"

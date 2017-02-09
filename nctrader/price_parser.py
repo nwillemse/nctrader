@@ -19,6 +19,7 @@ class PriceParser(object):
 
     # 10,000,000
     PRICE_MULTIPLIER = 10000000
+    DEFAULT_PREC = 6
 
     """Parse Methods. Multiplies a float out into an int if needed."""
 
@@ -47,25 +48,30 @@ class PriceParser(object):
     @staticmethod
     @dispatch(int)
     def display(x):  # flake8: noqa
-        return round(x / PriceParser.PRICE_MULTIPLIER, 2)
+        return round(x / PriceParser.PRICE_MULTIPLIER, PriceParser.DEFAULT_PREC)
 
     @staticmethod
     @dispatch(np.int64)
     def display(x):  # flake8: noqa
-        return round(x / PriceParser.PRICE_MULTIPLIER, 2)
+        return round(x / PriceParser.PRICE_MULTIPLIER, PriceParser.DEFAULT_PREC)
 
     @staticmethod
     @dispatch(np.float64)
     def display(x):  # flake8: noqa
-        return round(x / PriceParser.PRICE_MULTIPLIER, 2)
+        return round(x / PriceParser.PRICE_MULTIPLIER, PriceParser.DEFAULT_PREC)
 
     @staticmethod
     @dispatch(float)
     def display(x):  # flake8: noqa
-        return round(x, 2)
+        return round(x, PriceParser.DEFAULT_PREC)
 
     @staticmethod
     @dispatch(int, int)
+    def display(x, dp):  # flake8: noqa
+        return round(x / PriceParser.PRICE_MULTIPLIER, dp)
+
+    @staticmethod
+    @dispatch(np.int64, int)
     def display(x, dp):  # flake8: noqa
         return round(x / PriceParser.PRICE_MULTIPLIER, dp)
 

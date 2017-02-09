@@ -169,6 +169,6 @@ class Portfolio(object):
         Returns a list with all the open positions
         """
         open_pos= []
-        for ticker, pos in self.positions.iteritems():
+        for ticker, pos in self.positions.items():
             open_pos.append(pos)
         return open_pos

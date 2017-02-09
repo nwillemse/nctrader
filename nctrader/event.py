@@ -49,8 +49,11 @@ class TickEvent(Event):
     def __repr__(self):
         return str(self)
 
-    def __cmp__(self, other):
-        return cmp(self.priority, other.priority)
+    def __lt__(self, other):
+        return (self.priority < other.priority)
+
+    def __eq__(self, other):
+        return (self.priority == other.priority)
 
 
 class BarEvent(Event):
@@ -146,8 +149,11 @@ class BarEvent(Event):
     def __repr__(self):
         return str(self)
 
-    def __cmp__(self, other):
-        return cmp(self.priority, other.priority)
+    def __lt__(self, other):
+        return (self.priority < other.priority)
+
+    def __eq__(self, other):
+        return (self.priority == other.priority)
 
 
 class SignalEvent(Event):
@@ -191,8 +197,11 @@ class SignalEvent(Event):
             self.fraction, self.name, self.unit
         )
 
-    def __cmp__(self, other):
-        return cmp(self.priority, other.priority)
+    def __lt__(self, other):
+        return (self.priority < other.priority)
+
+    def __eq__(self, other):
+        return (self.priority == other.priority)
 
 
 class OrderEvent(Event):
@@ -233,8 +242,11 @@ class OrderEvent(Event):
             self.type, self.ticker, self.action, self.quantity, self.name
         )
 
-    def __cmp__(self, other):
-        return cmp(self.priority, other.priority)
+    def __lt__(self, other):
+        return (self.priority < other.priority)
+
+    def __eq__(self, other):
+        return (self.priority == other.priority)
 
 
 class FillEvent(Event):
@@ -285,5 +297,8 @@ class FillEvent(Event):
             str(self.price), str(self.commission), self.name
         )
 
-    def __cmp__(self, other):
-        return cmp(self.priority, other.priority)
+    def __lt__(self, other):
+        return (self.priority < other.priority)
+
+    def __eq__(self, other):
+        return (self.priority == other.priority)

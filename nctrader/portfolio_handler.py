@@ -49,7 +49,7 @@ class PortfolioHandler(object):
         if signal_event.action == 'XIT':
             # current position
             pos = self.portfolio.get_position(signal_event.ticker)
-            if pos <> None:
+            if pos != None:
                 if pos.action == 'BOT':
                     action = 'SLD'
                 else:
