@@ -26,7 +26,7 @@ class FixedDollarPositionSizer(AbstractPositionSizer):
             elif ticker_info.type == 'FUT':
                 quantity = int(self.dollar_amount / ticker_info.margin)
             else:
-                print "Ticker type not handled for", ticker_info
+                print("Ticker type not handled for", ticker_info)
         
             initial_order.quantity = quantity
 
