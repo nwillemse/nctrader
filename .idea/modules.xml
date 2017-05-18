@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../PyTrade/.idea/PyTrade.iml" filepath="$PROJECT_DIR$/../PyTrade/.idea/PyTrade.iml" />
       <module fileurl="file://$PROJECT_DIR$/../nctcm-strategies/.idea/nctcm-strategies.iml" filepath="$PROJECT_DIR$/../nctcm-strategies/.idea/nctcm-strategies.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/nctrader.iml" filepath="$PROJECT_DIR$/.idea/nctrader.iml" />
     </modules>

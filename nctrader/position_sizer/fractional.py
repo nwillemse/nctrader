@@ -11,7 +11,6 @@ class FractionalPositionSizer(AbstractPositionSizer):
         self.dollar_per_contract = dollar_per_contract
         self.units_per_position = units_per_position
 
-
     def _unit_shares(self, tot_shares, unit):
         """
         Calculates the number of shares for the next unit.  Based on
@@ -26,10 +25,9 @@ class FractionalPositionSizer(AbstractPositionSizer):
             result[i] += 1
         return result[unit-1]
 
-
     def size_order(self, portfolio, initial_order):
         """
-        This FranctionalPositionSizer object modifies the quantity base on
+        This FractionalPositionSizer object modifies the quantity base on
         available equity times fraction.
         """
         if initial_order is None:
@@ -37,6 +35,7 @@ class FractionalPositionSizer(AbstractPositionSizer):
         
         ticker_info = portfolio.price_handler.tickers_info[initial_order.ticker]
         last_price = portfolio.price_handler.get_last_close(initial_order.ticker)
+        tot_shares = 0
 
         # only size the order if quantity is zero - entry order
         if initial_order.quantity == 0:
@@ -46,7 +45,7 @@ class FractionalPositionSizer(AbstractPositionSizer):
             elif ticker_info.type == 'FUT':
                 tot_shares = int(portfolio.equity * dvar / self.dollar_per_contract)
             else:
-                print "Ticker type not handled for", ticker_info
+                print("Ticker type not handled for", ticker_info)
         
             initial_order.quantity = self._unit_shares(
                     tot_shares, initial_order.unit

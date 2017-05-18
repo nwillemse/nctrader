@@ -11,5 +11,33 @@
         </value>
       </option>
     </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="15">
+            <item index="0" class="java.lang.String" itemvalue="path.py" />
+            <item index="1" class="java.lang.String" itemvalue="traitlets" />
+            <item index="2" class="java.lang.String" itemvalue="scipy" />
+            <item index="3" class="java.lang.String" itemvalue="decorator" />
+            <item index="4" class="java.lang.String" itemvalue="pickleshare" />
+            <item index="5" class="java.lang.String" itemvalue="python-dateutil" />
+            <item index="6" class="java.lang.String" itemvalue="ipython" />
+            <item index="7" class="java.lang.String" itemvalue="pandas_datareader" />
+            <item index="8" class="java.lang.String" itemvalue="requests_cache" />
+            <item index="9" class="java.lang.String" itemvalue="numpy" />
+            <item index="10" class="java.lang.String" itemvalue="pexpect" />
+            <item index="11" class="java.lang.String" itemvalue="ipython-genutils" />
+            <item index="12" class="java.lang.String" itemvalue="pytz" />
+            <item index="13" class="java.lang.String" itemvalue="enum34" />
+            <item index="14" class="java.lang.String" itemvalue="ipywidgets" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
+      <option name="processCode" value="true" />
+      <option name="processLiterals" value="true" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
   </profile>
 </component>

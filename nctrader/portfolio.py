@@ -154,15 +154,13 @@ class Portfolio(object):
             
     def get_position(self, ticker):
         """
+        Returns the current position for the ticker specified or None
         """
         if ticker in self.positions:
             pt = self.positions[ticker]
             return pt
         else:
-            print(
-                "Ticker %s not in the current position list. "
-                "Could not return current position." % ticker
-            )
+            return None
 
     def get_open_positions(self):
         """

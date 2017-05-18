@@ -104,7 +104,7 @@ class Position(object):
             self.time_in_pos += 1
             self.cur_timestamp = timestamp
 
-    def transact_shares(self, action, quantity, price, commission, name):
+    def transact_shares(self, action, quantity, price, commission, name=None):
         """
         Calculates the adjustments to the Position that occur
         once new shares are bought and sold.
@@ -117,7 +117,7 @@ class Position(object):
         # Adjust total bought and sold
         if action == "BOT":
             self.comm_bot += commission
-            self.avg_bot = (self.avg_bot * self.buys + price * quantity) // (self.buys + quantity)
+            self.avg_bot = (self.avg_bot * self.net + price * quantity) // (self.net + quantity)
             self.buys += quantity
             self.total_bot = self.buys * self.avg_bot * self.bpv
             if self.action != "SLD":
@@ -133,7 +133,7 @@ class Position(object):
         # action == "SLD"
         else:
             self.comm_sld += commission
-            self.avg_sld = (self.avg_sld * self.sells + price * quantity) // (self.sells + quantity)
+            self.avg_sld = (self.avg_sld * self.net + price * quantity) // (self.net + quantity)
             self.sells += quantity
             self.total_sld = self.sells * self.avg_sld * self.bpv
             if self.action != "BOT":

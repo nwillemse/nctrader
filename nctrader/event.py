@@ -172,7 +172,7 @@ class SignalEvent(Event):
         ticker - The ticker symbol, e.g. 'GOOG'.
         action - 'BOT'  go long
                  'SLD'  go short
-                 'EXIT' close the trade out completely
+                 'XIT' close the trade out completely
         suggested_quantity - Optional positively valued integer
             representing a suggested absolute quantity of units
             of an asset to transact in, which is used by the
