@@ -106,8 +106,8 @@ class Portfolio(object):
             timestamp = self.price_handler.get_last_timestamp(ticker)
             self.positions[ticker].update_market_value(bid, ask, timestamp)
 
-            self.open_quantity += self.positions[ticker].quantity
-            if self.positions[ticker].quantity == 0:
+            self.open_quantity += self.positions[ticker].open_quantity
+            if self.positions[ticker].open_quantity == 0:
                 closed = self.positions.pop(ticker)
                 self.realised_pnl += closed.realised_pnl
                 self.cur_cash += closed.realised_pnl

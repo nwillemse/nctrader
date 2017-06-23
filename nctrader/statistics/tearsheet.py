@@ -387,14 +387,14 @@ class TearsheetStatistics(AbstractStatistics):
             max_loss_dt = None #pd.to_datetime(str(max_loss_dt)).strftime('%Y-%m-%d')
             avg_dit = '{:.2f}'.format(0.0)
         else:
-            win_pct = pos[pos["trade_pct"] > 0].shape[0] / float(num_trades)
+            win_pct = pos[pos["trade_ret"] > 0].shape[0] / float(num_trades)
             win_pct_str = '{:.0%}'.format(win_pct)
-            avg_trd_pct = '{:.2%}'.format(np.mean(pos["trade_pct"]))
-            avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] > 0]["trade_pct"]))
-            avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_pct"] <= 0]["trade_pct"]))
-            max_win_pct = '{:.2%}'.format(np.max(pos["trade_pct"]))
-            max_loss_pct = '{:.2%}'.format(np.min(pos["trade_pct"]))
-            max_loss_dt = pos[pos["trade_pct"] == np.min(pos["trade_pct"])].entry_date.values[0]
+            avg_trd_pct = '{:.2%}'.format(np.mean(pos["trade_ret"]))
+            avg_win_pct = '{:.2%}'.format(np.mean(pos[pos["trade_ret"] > 0]["trade_ret"]))
+            avg_loss_pct = '{:.2%}'.format(np.mean(pos[pos["trade_ret"] <= 0]["trade_ret"]))
+            max_win_pct = '{:.2%}'.format(np.max(pos["trade_ret"]))
+            max_loss_pct = '{:.2%}'.format(np.min(pos["trade_ret"]))
+            max_loss_dt = pos[pos["trade_ret"] == np.min(pos["trade_ret"])].entry_date.values[0]
             max_loss_dt = pd.to_datetime(str(max_loss_dt)).strftime('%Y-%m-%d')
             avg_dit = '{:.2f}'.format(np.mean(pos.time_in_pos))
 
