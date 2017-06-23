@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from nctrader.position import Position
+from nctrader.position2 import Position
 from nctrader.price_parser import PriceParser
 
 
@@ -15,97 +15,63 @@ class TestShortRoundTripESPosition(unittest.TestCase):
         """
         Set up the Position object that will store the PnL.
         """
-        print "Setup initial position SLD 2 ES_0_I0B at 2200.25 with $4.06 commission:"
+        print("Setup initial position SLD 1 ES at 2430.50 with $2.03 commission:")
         self.position = Position(
-            "SLD", "ES_0_I0B", 2,
-            PriceParser.parse(2200.25), PriceParser.parse(4.06),
-            PriceParser.parse(2201.50), PriceParser.parse(2201.75),
-            datetime(2016, 1, 1)
+            "SLD", "ES", 1,
+            PriceParser.parse(2430.50), PriceParser.parse(2.04),
+            PriceParser.parse(2400.50), PriceParser.parse(2400.75),
+            datetime(2016, 1, 1), mul=50
         )
-        print self.position, '\n'
+        print(self.position, '\n')
 
     def test_transact_position(self):
         """
         Update market value of current position
         """
-        print "Update market value with bid/ask of 2190.00/2190.25:"
+        print("Update market value with bid/ask of 2423.75.00/2424.00:")
         self.position.update_market_value(
-            PriceParser.parse(2190.00), PriceParser.parse(2190.25),
+            PriceParser.parse(2423.75), PriceParser.parse(2424.00),
             datetime(2016, 1, 2)
         )
-        print self.position, '\n'
-        
+        print(self.position, '\n')
+                
         self.assertEqual(self.position.action, "SLD")
-        self.assertEqual(self.position.ticker, "ES_0_I0B")
-        self.assertEqual(self.position.quantity, 2)
+        self.assertEqual(self.position.ticker, "ES")
+        self.assertEqual(self.position.quantity, 1)
+        self.assertEqual(self.position.open_quantity, 1)
 
-        self.assertEqual(self.position.buys, 0)
-        self.assertEqual(self.position.sells, 2)
-        self.assertEqual(self.position.net, -2)
-        self.assertEqual(
-            PriceParser.display(self.position.avg_bot, 5), 0
-        )
-        self.assertEqual(
-            PriceParser.display(self.position.avg_sld, 5), 2200.25
-        )
-        self.assertEqual(PriceParser.display(self.position.total_bot), 0.00)
-        self.assertEqual(PriceParser.display(self.position.total_sld), 2200.25*2*50)
-        self.assertEqual(PriceParser.display(self.position.net_total), 2200.25*2*50)
-        self.assertEqual(PriceParser.display(self.position.total_commission), 4.06)
-        self.assertEqual(PriceParser.display(self.position.net_incl_comm), 2200.25*2*50 - 4.06)
-
-        self.assertEqual(
-            PriceParser.display(self.position.avg_price, 5), (2200.25*2*50 - 4.06) / 2 / 50
-        )
-        self.assertEqual(PriceParser.display(self.position.cost_basis), 2200.25*-2*50 + 4.06)
-        self.assertEqual(PriceParser.display(self.position.market_value), (2190.00+2190.25)/2 * -2 * 50)
-        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), round((((2190+2190.25)/2 * -2 * 50) - (2200.25*-2*50 + 4.06)), 2))
+        self.assertEqual(PriceParser.display(self.position.entry_price, 5), round((2430.50 * 50 - 2.04) / 50, 5) )
+        self.assertEqual(PriceParser.display(self.position.exit_price, 5), 0)
+        self.assertEqual(PriceParser.display(self.position.total_commission), 2.04)
+        self.assertEqual(PriceParser.display(self.position.cost_basis), -50*2430.50 + 2.04)
+        self.assertEqual(PriceParser.display(self.position.market_value), -50*2424.00, 2)
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), round((50*2424.00*-1) - (50*2430.50*-1 + 2.04),2) , 2)
         self.assertEqual(PriceParser.display(self.position.realised_pnl), 0.00)
 
-        print "Cover 1 contract of current position at 2198.50 with 2.03 commission. Market at 2199.00/2199.25:"
+        print("Sell 3 ES @ 2422.75 with $6.12 commission. Update market value with bid/ask of 2420.75/2421.00:")
         self.position.transact_shares(
-            "BOT", 1, PriceParser.parse(2198.50), PriceParser.parse(2.03)
+            "SLD", 3, PriceParser.parse(2422.75), PriceParser.parse(6.12)
         )
         self.position.update_market_value(
-            PriceParser.parse(2199.00), PriceParser.parse(2199.25),
+            PriceParser.parse(2420.75), PriceParser.parse(2421.00),
             datetime(2016, 1, 3)
         )
-        print self.position, '\n'
+        print(self.position, '\n')
+        print(self.position.bots, self.position.solds)
 
-        self.assertEqual(self.position.quantity, 1)
+        self.assertEqual(self.position.action, "SLD")
+        self.assertEqual(self.position.ticker, "ES")
+        self.assertEqual(self.position.quantity, 4)
+        self.assertEqual(self.position.open_quantity, 4)
 
-        self.assertEqual(self.position.buys, 1)
-        self.assertEqual(self.position.sells, 2)
-        self.assertEqual(self.position.net, -1)
-        self.assertEqual(
-            PriceParser.display(self.position.avg_bot, 5), (2198.5 * 1) / 1
-        )
-        self.assertEqual(
-            PriceParser.display(self.position.avg_sld, 5), (2200.25 * 2) / 2
-        )
-        self.assertEqual(PriceParser.display(self.position.total_bot), 2198.50*1*50)
-        self.assertEqual(PriceParser.display(self.position.total_sld), 2200.25*2*50)
-        self.assertEqual(PriceParser.display(self.position.net_total), 2200.25*2*50 - 2198.50*1*50)
-        self.assertEqual(PriceParser.display(self.position.total_commission), 4.06+2.03)
-        self.assertEqual(PriceParser.display(self.position.net_incl_comm), 2200.25*2*50 - 2198.50*1*50 - 6.09)
+        self.assertEqual(PriceParser.display(self.position.entry_price, 5), round((2430.50 * 50 - 2.04 + 3*2422.75*50 - 6.12) / 4 / 50, 5) )
+        self.assertEqual(PriceParser.display(self.position.exit_price, 5), 0)
+        self.assertEqual(PriceParser.display(self.position.total_commission), 2.04+6.12)
+        self.assertEqual(PriceParser.display(self.position.cost_basis), (-50*2430.50 + 2.04) + (-3*50*2422.75 + 6.12) )
+        self.assertEqual(PriceParser.display(self.position.market_value), -4*50*2421.00, 2)
+        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), round((-4*50*2421.00) - ((-50*2430.50 + 2.04) + (-3*50*2422.75 + 6.12)),2) , 2)
+        self.assertEqual(PriceParser.display(self.position.realised_pnl), 0.00)
 
-        self.assertEqual(
-            PriceParser.display(self.position.avg_price, 5), (2200.25*2*50 - 4.06) / 2 / 50
-        )
-        self.assertEqual(PriceParser.display(self.position.cost_basis), 2200.25*-1*50 + 2.03)
-        self.assertEqual(PriceParser.display(self.position.market_value), (2199.00+2199.25)/2 * -1 * 50)
-        self.assertEqual(PriceParser.display(self.position.unrealised_pnl), round((((2199+2199.25)/2 * -1 * 50) - (2200.25*-1*50 + 2.03)), 2))
-        self.assertEqual(PriceParser.display(self.position.realised_pnl), (2198.50 - 2200.25) * -1 * 50 - 4.06)
-
-        print "Cover 1 contract TO CLOSE position at 2190.00 with 2.03 commission. Market at 2190.50/2190.75:"
-        self.position.transact_shares(
-            "BOT", 1, PriceParser.parse(2190.00), PriceParser.parse(2.03)
-        )
-        self.position.update_market_value(
-            PriceParser.parse(2190.50), PriceParser.parse(2190.75),
-            datetime(2016, 1, 3)
-        )
-        print self.position, '\n'
 
 if __name__ == "__main__":
     unittest.main()

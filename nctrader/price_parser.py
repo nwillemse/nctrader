@@ -78,4 +78,4 @@ class PriceParser(object):
     @staticmethod
     @dispatch(float, int)
     def display(x, dp):  # flake8: noqa
-        return round(x, dp)
+        return round(x / PriceParser.PRICE_MULTIPLIER, dp)
