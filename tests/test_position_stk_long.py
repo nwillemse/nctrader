@@ -1,7 +1,7 @@
 import unittest
 
 from datetime import datetime
-from nctrader.position2 import Position
+from nctrader.position import Position
 from nctrader.price_parser import PriceParser
 
 

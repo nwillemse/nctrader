@@ -68,7 +68,7 @@ class Position(object):
             trade['init_cost'] = abs(self.cost_basis)
             self.solds.append(trade)
 
-        self.entry_price = abs(self.cost_basis) / self.quantity / self.mul
+        self.entry_price = int(abs(self.cost_basis) / self.quantity / self.mul)
         self.total_commission = init_commission
 
     def update_market_value(self, bid, ask, timestamp):
@@ -122,14 +122,14 @@ class Position(object):
 
         if self.action == 'BOT':
             self.quantity = b_qty
-            self.entry_price = bot / b_qty / self.mul
-            self.exit_price = 0 if s_qty == 0 else (sld / s_qty / self.mul)
+            self.entry_price = int(bot / b_qty / self.mul)
+            self.exit_price = 0 if s_qty == 0 else int(sld / s_qty / self.mul)
             self.cost_basis = int(b_cb)
             self.open_quantity= b_oqty
         else:
             self.quantity = s_qty
-            self.entry_price = sld / s_qty / self.mul
-            self.exit_price = 0 if b_qty == 0 else (bot / b_qty / self.mul)
+            self.entry_price = int(sld / s_qty / self.mul)
+            self.exit_price = 0 if b_qty == 0 else int(bot / b_qty / self.mul)
             self.cost_basis = int(s_cb)
             self.open_quantity= s_oqty
 
