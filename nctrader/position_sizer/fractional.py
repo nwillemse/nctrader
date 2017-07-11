@@ -19,7 +19,7 @@ class FractionalPositionSizer(AbstractPositionSizer):
         """
         result = []
         for i in range(self.units_per_position):
-            result.append(tot_shares / self.units_per_position)
+            result.append(int(tot_shares / self.units_per_position))
         remaining = tot_shares % self.units_per_position
         for i in range(remaining):
             result[i] += 1

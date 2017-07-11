@@ -60,11 +60,11 @@ class Position(object):
                  'comm': init_commission
                 }
         if self.action == "BOT":
-            self.cost_basis = self.quantity * init_price * self.mul + init_commission
+            self.cost_basis = int(self.quantity * init_price * self.mul + init_commission)
             trade['init_cost'] = abs(self.cost_basis)
             self.bots.append(trade)
         else:  # action == "SLD"
-            self.cost_basis = -self.quantity * init_price * self.mul + init_commission
+            self.cost_basis = int(-self.quantity * init_price * self.mul + init_commission)
             trade['init_cost'] = abs(self.cost_basis)
             self.solds.append(trade)
 
@@ -89,7 +89,7 @@ class Position(object):
         else:
             for p in self.solds: mv -= p['remaining_qty'] * ask
 
-        self.market_value = mv * self.mul
+        self.market_value = int(mv * self.mul)
         self.unrealised_pnl = (self.market_value - self.cost_basis)
         self.exit_date = timestamp
         if self.cur_timestamp != timestamp:
