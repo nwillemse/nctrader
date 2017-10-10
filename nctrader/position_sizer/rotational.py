@@ -43,11 +43,11 @@ class RotationalPositionSizer(AbstractPositionSizer):
             # exit current pos if fraction is zero
             if order_fraction == 0:
                 action = 'SLD' if pos.action == 'BOT' else 'BOT'
-                n_shares = abs(pos.net)
+                n_shares = pos.open_quantity
 
             else:
                 target_pos = int(portfolio.equity * self.fraction * order_fraction / last_price)
-                n_shares = target_pos - pos.net
+                n_shares = target_pos - pos.open_quantity
                 if n_shares > 0:
                     action = 'BOT'
                 elif n_shares < 0:

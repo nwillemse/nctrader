@@ -45,9 +45,8 @@ class Position(object):
         self.time_in_pos = 0
 
         self._calculate_initial_value(init_price, init_commission)
-        #self.update_market_value(bid, ask, entry_date)
-        self.market_value = 0
-
+        self.update_market_value(bid, ask, entry_date)
+        
     def _calculate_initial_value(self, init_price, init_commission):
         """
         Depending upon whether the action was a buy or sell ("BOT"

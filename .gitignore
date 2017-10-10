@@ -39,3 +39,6 @@ pip-log.txt
 
 # Spyder Projects
 .spyproject
+
+# Visual Studio Code
+.vscode
