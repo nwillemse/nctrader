@@ -3,7 +3,7 @@ from __future__ import print_function
 from enum import Enum
 
 
-EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL")
+EventType = Enum("EventType", "TICK BAR SIGNAL ORDER FILL TRADE")
 
 
 class Event(object):
@@ -295,6 +295,44 @@ class FillEvent(Event):
             str(self.type), str(self.ticker), str(self.timestamp),
             str(self.action), str(self.quantity), str(self.action),
             str(self.price), str(self.commission), self.name
+        )
+
+    def __lt__(self, other):
+        return (self.priority < other.priority)
+
+    def __eq__(self, other):
+        return (self.priority == other.priority)
+
+
+class TradeEvent(Event):
+    """
+    Handles the event of sending a Trade from a Strategy object.
+    This is received by a Portfolio object and acted upon.
+    """
+    def __init__(
+            self, ticker, action, quantity, name=None
+    ):
+        """
+        Initialises the TradeEvent.
+
+        Parameters:
+        ticker - The ticker symbol, e.g. 'GOOG'.
+        action - 'BOT'  go long
+                 'SLD'  go short
+                 'XIT' close the trade out completely
+        quantity - Quantity of shares being traded.
+        name - entry or exit name to tie the position to
+        """
+        self.type = EventType.TRADE
+        self.ticker = ticker
+        self.action = action
+        self.quantity = quantity
+        self.name = name
+        self.priority = 500
+
+    def __str__(self):
+        return "%s ticker:%s action:%s quantity:%s name:%s" % (
+            self.type, self.ticker, self.action, self.quantity, self.name
         )
 
     def __lt__(self, other):

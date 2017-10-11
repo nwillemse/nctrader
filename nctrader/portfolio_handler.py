@@ -137,6 +137,12 @@ class PortfolioHandler(object):
         """
         self._convert_fill_to_portfolio_update(fill_event)
 
+    def on_trade(self, trade_event):
+        """
+        This is called by the trade-sim to take a TradeEvent and update 
+        the Portfolio object with new or modified Positions.
+        """
+
     def update_portfolio_value(self):
         """
         Update the portfolio to reflect current market value as

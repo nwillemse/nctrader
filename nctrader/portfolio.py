@@ -151,7 +151,7 @@ class Portfolio(object):
             self._modify_position(
                 action, ticker, quantity, price, commission, name
             )
-            
+
     def get_position(self, ticker):
         """
         Returns the current position for the ticker specified or None
@@ -166,7 +166,7 @@ class Portfolio(object):
         """
         Returns a list with all the open positions
         """
-        open_pos= []
+        open_pos = []
         for ticker, pos in self.positions.items():
             open_pos.append(pos)
         return open_pos
