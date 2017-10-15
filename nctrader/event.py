@@ -163,7 +163,8 @@ class SignalEvent(Event):
     """
     def __init__(
             self, ticker, action, suggested_quantity=None,
-            fraction=0.0, name=None, unit=1
+            fraction=0.0, name=None, unit=1, price=None,
+            commission=None, timestamp=None
     ):
         """
         Initialises the SignalEvent.
@@ -189,6 +190,9 @@ class SignalEvent(Event):
         self.fraction = fraction
         self.name = name
         self.unit = unit
+        self.price = price
+        self.commission = commission
+        self.timestamp = timestamp
         self.priority = 200
 
     def __str__(self):
@@ -210,7 +214,10 @@ class OrderEvent(Event):
     The order contains a ticker (e.g. GOOG), action (BOT or SLD)
     and quantity.
     """
-    def __init__(self, ticker, action, quantity, name=None):
+    def __init__(
+            self, ticker, action, quantity, name=None,
+            price=None, commission=None, timestamp=None
+    ):
         """
         Initialises the OrderEvent.
 
@@ -225,6 +232,9 @@ class OrderEvent(Event):
         self.action = action
         self.quantity = quantity
         self.name = name
+        self.price = price
+        self.commission = commission
+        self.timestamp = timestamp
         self.priority = 300
 
     def print_order(self):
@@ -232,14 +242,14 @@ class OrderEvent(Event):
         Outputs the values within the OrderEvent.
         """
         print(
-            "Order: Ticker=%s, Action=%s, Quantity=%s Name=%s" % (
-                self.ticker, self.action, self.quantity, self.name
+            "Order: Ticker=%s, Action=%s, Quantity=%s Name=%s Price=%.2f Commission=%.2f" % (
+                self.ticker, self.action, self.quantity, self.name, self.price, self.commission
             )
         )
 
     def __str__(self):
-        return "%s ticker:%s action:%s quantity:%s name=%s" % (
-            self.type, self.ticker, self.action, self.quantity, self.name
+        return "%s ticker:%s action:%s quantity:%s name=%s price=%.2f commission=%.2f" % (
+            self.type, self.ticker, self.action, self.quantity, self.name, self.price, self.commission
         )
 
     def __lt__(self, other):
@@ -295,44 +305,6 @@ class FillEvent(Event):
             str(self.type), str(self.ticker), str(self.timestamp),
             str(self.action), str(self.quantity), str(self.action),
             str(self.price), str(self.commission), self.name
-        )
-
-    def __lt__(self, other):
-        return (self.priority < other.priority)
-
-    def __eq__(self, other):
-        return (self.priority == other.priority)
-
-
-class TradeEvent(Event):
-    """
-    Handles the event of sending a Trade from a Strategy object.
-    This is received by a Portfolio object and acted upon.
-    """
-    def __init__(
-            self, ticker, action, quantity, name=None
-    ):
-        """
-        Initialises the TradeEvent.
-
-        Parameters:
-        ticker - The ticker symbol, e.g. 'GOOG'.
-        action - 'BOT'  go long
-                 'SLD'  go short
-                 'XIT' close the trade out completely
-        quantity - Quantity of shares being traded.
-        name - entry or exit name to tie the position to
-        """
-        self.type = EventType.TRADE
-        self.ticker = ticker
-        self.action = action
-        self.quantity = quantity
-        self.name = name
-        self.priority = 500
-
-    def __str__(self):
-        return "%s ticker:%s action:%s quantity:%s name:%s" % (
-            self.type, self.ticker, self.action, self.quantity, self.name
         )
 
     def __lt__(self, other):

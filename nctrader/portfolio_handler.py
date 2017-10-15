@@ -56,12 +56,14 @@ class PortfolioHandler(object):
                     action = 'BOT'
                 order = SuggestedOrder(
                     signal_event.ticker, action, pos.open_quantity,
-                    signal_event.fraction, signal_event.name, signal_event.unit
+                    signal_event.fraction, signal_event.name, signal_event.unit,
+                    signal_event.price, signal_event.commission, signal_event.timestamp
                 )
         else:
             order = SuggestedOrder(
                 signal_event.ticker, signal_event.action, quantity,
-                signal_event.fraction, signal_event.name, signal_event.unit
+                signal_event.fraction, signal_event.name, signal_event.unit,
+                signal_event.price, signal_event.commission, signal_event.timestamp
             )
 
         return order

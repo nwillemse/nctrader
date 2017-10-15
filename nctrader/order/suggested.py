@@ -8,7 +8,8 @@ class SuggestedOrder(object):
     scrutinised by the position sizing and risk management layers.
     """
     def __init__(
-        self, ticker, action, quantity=0, fraction=0.0, name=None, unit=1
+        self, ticker, action, quantity=0, fraction=0.0, name=None, unit=1,
+        price=None, commission=None, timestamp=None
     ):
         """
         Initialises the SuggestedOrder. The quantity defaults
@@ -32,7 +33,10 @@ class SuggestedOrder(object):
         self.fraction = fraction
         self.name = name
         self.unit = unit
+        self.price = price
+        self.commission = commission
+        self.timestamp = timestamp
 
     def __str__(self):
-        return "SuggestedOrder: ticker=%s action=%s quantity=%s fraction=%.2f%% name=%s, unit=%s" % \
-            (self.ticker, self.action, self.quantity, self.fraction, self.name, self.unit)
+        return "SuggestedOrder: ticker=%s action=%s quantity=%s fraction=%.2f%% name=%s unit=%s price=%.2f comm=%.2f" % \
+            (self.ticker, self.action, self.quantity, self.fraction, self.name, self.unit, self.price, self.commission)

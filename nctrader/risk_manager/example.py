@@ -17,6 +17,9 @@ class ExampleRiskManager(AbstractRiskManager):
                 sized_order.ticker,
                 sized_order.action,
                 sized_order.quantity,
-                sized_order.name
+                sized_order.name,
+                sized_order.price,
+                sized_order.commission,
+                sized_order.timestamp
             )
             return [order_event]
