@@ -2,12 +2,12 @@ import pandas as pd
 
 from ..price_parser import PriceParser
 from .base import AbstractBarPriceHandler
-from .sqlite_db import db_session, init_engine
-from .sqlite_db.models import Symbol, DataVendor
+from .db import db_session, init_engine
+from .db.models import Asset, DataVendor
 from ..event import BarEvent
 
 
-class SqliteBarPriceHandler(AbstractBarPriceHandler):
+class DbBarPriceHandler(AbstractBarPriceHandler):
     """
     SqliteBarPriceHandler is designed to read a sqlite3 database
     with daily Open-High-Low-Close-Volume (OHLCV) data for each
@@ -15,18 +15,18 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
     events queue as BarEvents.
     """
     def __init__(
-        self, sqlite_db, events_queue, init_tickers=None,
+        self, db_uri, events_queue, init_tickers=None,
         data_vendor='CSI', bar_size='D'
     ):
         """
         Takes path to sqlite database, the events queue and a possible
-        list of initial ticker symbols then creates an (optional)
+        list of initial ticker assets then creates an (optional)
         list of ticker subscriptions and associated prices.
         """
-        self.sqlite_db = sqlite_db
+        self.db_uri = db_uri
         self.events_queue = events_queue
         self.bar_size = bar_size
-        self.engine = init_engine(sqlite_db)
+        self.engine = init_engine(db_uri)
         self.data_vendor = db_session.query(DataVendor) \
                                      .filter(DataVendor.name == data_vendor) \
                                      .first()
@@ -41,43 +41,44 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
 
     def _load_ticker_price(self, ticker):
         """
-        Opens the SQLITE database containing the ticker data from
-        the specified sqlite database, converting them into
+        Opens the database containing the ticker data from
+        the specified database, converting them into
         them into a pandas DataFrame, stored in a dictionary.
         """
-        qry="""SELECT d.timestamp AS Date,
-                      d.open_price AS Open,
-                      d.high_price AS High,
-                      d.low_price AS Low,
-                      d.close_price AS Close,
-                      d.volume AS Volume
-                 FROM bar_data    d,
-                      symbol      s,
-                      data_vendor dv
-                WHERE s.id = d.symbol_id
-                  AND dv.id = s.data_vendor_id
-                  AND s.ticker = '%s'
-                  AND d.bar_size = '%s'
-                  AND dv.name = '%s'
+        qry = """SELECT d.timestamp AS date,
+                        d.open_price AS open,
+                        d.high_price AS high,
+                        d.low_price AS low,
+                        d.close_price AS close,
+                        d.volume AS volume
+                   FROM bar_data    d,
+                        asset       s,
+                        data_vendor dv
+                  WHERE s.id = d.asset_id
+                    AND dv.id = s.data_vendor_id
+                    AND s.ticker = '%s'
+                    AND d.bar_size = '%s'
+                    AND dv.name = '%s'
         """
         sql_qry = qry % (ticker, self.bar_size, self.data_vendor.name)
+        print(sql_qry)
         self.tickers_data[ticker] = pd.read_sql_query(
-            sql_qry, self.engine, index_col='Date', parse_dates=['Date']
+            sql_qry, self.engine, index_col='date', parse_dates=['date']
         )
         self.tickers_data[ticker]["Ticker"] = ticker
 
     def _load_ticker_info(self, ticker):
         """
-        Opens up the sqlite database, loads the Symbol table into a dictionary
+        Opens up the sqlite database, loads the Asset table into a dictionary
         containing all the additional information including big_point_value,
         tick_size, margin
         """
-        symbol_info = db_session.query(Symbol) \
-                                .filter(Symbol.ticker == ticker) \
-                                .filter(Symbol.data_vendor == self.data_vendor) \
-                                .one()
-        symbol_info.margin = PriceParser.parse(symbol_info.margin)
-        return symbol_info
+        asset_info = db_session.query(Asset) \
+                               .filter(Asset.ticker == ticker) \
+                               .filter(Asset.data_vendor == self.data_vendor) \
+                               .one()
+        asset_info.margin = PriceParser.parse(asset_info.margin)
+        return asset_info
 
     def _merge_sort_ticker_data(self):
         """
@@ -102,7 +103,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
                 dft = self.tickers_data[ticker]
                 row0 = dft.iloc[0]
 
-                close = PriceParser.parse(row0["Close"])
+                close = PriceParser.parse(row0["close"])
 
                 ticker_prices = {
                     "close": close,
@@ -112,7 +113,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
             except OSError:
                 print(
                     "Could not subscribe ticker %s "
-                    "as no data was found in sqlite database..." % ticker
+                    "as no data was found in database..." % ticker
                 )
         else:
             print(
@@ -127,7 +128,7 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
             except OSError:
                 print(
                     "Could not load ticker info %s as no data"
-                    "was found in sqlite database table Symbol..." % ticker
+                    "was found in database table Asset..." % ticker
                 )
 
     def _create_event(self, index, period, ticker, row):
@@ -135,11 +136,11 @@ class SqliteBarPriceHandler(AbstractBarPriceHandler):
         Obtain all elements of the bar from a row of dataframe
         and return a BarEvent
         """
-        open_price = PriceParser.parse(row["Open"])
-        high_price = PriceParser.parse(row["High"])
-        low_price = PriceParser.parse(row["Low"])
-        close_price = PriceParser.parse(row["Close"])
-        volume = int(row["Volume"])
+        open_price = PriceParser.parse(row["open"])
+        high_price = PriceParser.parse(row["high"])
+        low_price = PriceParser.parse(row["low"])
+        close_price = PriceParser.parse(row["close"])
+        volume = int(row["volume"])
         bev = BarEvent(
             ticker, index, period, open_price, high_price,
             low_price, close_price, volume
