@@ -61,7 +61,6 @@ class DbBarPriceHandler(AbstractBarPriceHandler):
                     AND dv.name = '%s'
         """
         sql_qry = qry % (ticker, self.bar_size, self.data_vendor.name)
-        print(sql_qry)
         self.tickers_data[ticker] = pd.read_sql_query(
             sql_qry, self.engine, index_col='date', parse_dates=['date']
         )
