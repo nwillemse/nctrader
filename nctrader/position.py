@@ -9,7 +9,7 @@ class Position(object):
     pos_id = 0
 
     def __init__(
-            self, action, ticker, init_quantity,
+            self, action, ticker, ticker_type, margin, init_quantity,
             init_price, init_commission, bid, ask, entry_date,
             mul=1, entry_name=None
     ):
@@ -25,6 +25,8 @@ class Position(object):
         self.id = Position.pos_id
         self.action = action
         self.ticker = ticker
+        self.ticker_type = ticker_type
+        self.margin = margin
         self.quantity = init_quantity
         self.open_quantity = init_quantity
         self.mul = mul
@@ -124,15 +126,19 @@ class Position(object):
             self.entry_price = int(bot / b_qty / self.mul)
             self.exit_price = 0 if s_qty == 0 else int(sld / s_qty / self.mul)
             self.cost_basis = int(b_cb)
-            self.open_quantity= b_oqty
+            self.open_quantity = b_oqty
         else:
             self.quantity = s_qty
             self.entry_price = int(sld / s_qty / self.mul)
             self.exit_price = 0 if b_qty == 0 else int(bot / b_qty / self.mul)
             self.cost_basis = int(s_cb)
-            self.open_quantity= s_oqty
+            self.open_quantity = s_oqty
 
-        self.trade_ret = 0 if self.exit_price == 0 else self.exit_price / self.entry_price - 1
+        # self.trade_ret = 0 if self.exit_price == 0 else self.exit_price / self.entry_price - 1
+        if self.exit_price != 0 and self.ticker_type == 'STK':
+            self.trade_ret = self.realised_pnl / (self.entry_price * self.quantity)
+        elif self.exit_price != 0 and self.ticker_type == 'FUT':
+            self.trade_ret = self.realised_pnl / (self.quantity * self.margin)
 
     def transact_shares(self, action, quantity, price, commission, name=None):
         """

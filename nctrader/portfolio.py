@@ -63,11 +63,13 @@ class Portfolio(object):
                 close_price = self.price_handler.get_last_close(ticker)
                 bid = close_price
                 ask = close_price
-            
+
             bpv = self.tickers_info[ticker].big_point_value
+            ticker_type = self.tickers_info[ticker].type
+            margin = self.tickers_info[ticker].margin
             position = Position(
-                action, ticker, quantity, price, commission,
-                bid, ask, entry_date, bpv, entry_name
+                action, ticker, ticker_type, margin, quantity, price,
+                commission, bid, ask, entry_date, bpv, entry_name
             )
             self.positions[ticker] = position
             self.open_quantity = quantity
@@ -133,8 +135,9 @@ class Portfolio(object):
         PortfolioHandler to update the Portfolio itself.
         """
         ticker_type = self.tickers_info[ticker].type
+        margin = self.tickers_info[ticker].margin
         if ticker_type == 'FUT':
-            factor = self.tickers_info[ticker].margin
+            factor = margin
         else:
             factor = price
 
